@@ -182,21 +182,47 @@
   #ppstage{
     position:relative; background:var(--grass);
     border:4px solid var(--grass-deep); border-radius:22px;
-    height:250px; overflow:hidden;
-    display:flex; align-items:center; justify-content:space-around;
+    height:310px; overflow:hidden;
   }
-  .pslot{width:42%; text-align:center; transition:all .3s;}
-  .pslot .face-wrap{display:inline-block; width:96px; height:96px; transition:transform .28s cubic-bezier(.34,1.3,.5,1); position:relative;}
-  .pslot .face-wrap svg{width:100%; height:100%; filter:drop-shadow(0 3px 1px #00000022);}
-  .pslot .role{
-    display:inline-block; margin-top:6px; font-size:12.5px; font-weight:800;
-    background:#FFF9EEDD; border-radius:99px; padding:3px 11px;
+  #pprole{
+    position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:7;
+    font-size:13px; font-weight:800; background:#FFF9EEF0; border-radius:99px;
+    padding:6px 14px; white-space:nowrap; max-width:94%;
+    overflow:hidden; text-overflow:ellipsis; border:2px solid #00000012;
   }
-  .pslot .pname{font-size:13px; font-weight:800; margin-top:4px; color:#334424; text-shadow:0 1px 0 #ffffff66;}
-  .dirL{transform:rotate(-16deg) translateX(-12px);}
-  .dirC{transform:translateY(8px) scale(1.06);}
-  .dirR{transform:rotate(16deg) translateX(12px);}
-  .pawicon{position:absolute; width:44px; height:44px; top:26px; transition:all .25s; filter:drop-shadow(0 2px 1px #00000033);}
+  #pprole.paw{color:var(--accent-deep); border-color:var(--accent);}
+  #pprole.dodge{color:#22574C; border-color:var(--teal);}
+  #dodgerArea{position:absolute; left:50%; top:48px; transform:translateX(-50%); width:150px; height:210px;}
+  #dodgerArea.hitshake{animation:hitshake .5s;}
+  @keyframes hitshake{
+    0%,100%{transform:translateX(-50%);}
+    25%{transform:translateX(calc(-50% - 7px));}
+    75%{transform:translateX(calc(-50% + 7px));}
+  }
+  #catBody{position:absolute; bottom:0; left:0; width:150px; line-height:0;}
+  #catBody svg{width:100%;}
+  #catHead{
+    position:absolute; top:0; left:20px; width:110px; height:110px;
+    transition:transform .28s cubic-bezier(.34,1.3,.5,1); z-index:2;
+  }
+  #catHead svg{width:100%; height:100%; filter:drop-shadow(0 3px 1px #00000022);}
+  .dirL{transform:rotate(-20deg) translateX(-16px);}
+  .dirC{transform:translateY(9px) scale(1.06);}
+  .dirR{transform:rotate(20deg) translateX(16px);}
+  #dodgerTag{
+    position:absolute; bottom:8px; left:50%; transform:translateX(-50%); z-index:7;
+    font-size:12px; font-weight:800; color:#334424; text-shadow:0 1px 0 #ffffff88; white-space:nowrap;
+  }
+  #bigpaw{
+    position:absolute; bottom:-8px; left:50%; margin-left:-46px; width:92px; height:92px; z-index:6;
+    transition:transform .26s cubic-bezier(.34,1.3,.5,1);
+    filter:drop-shadow(0 3px 2px #00000033);
+  }
+  #bigpaw.wig1{transform:translate(-18px,-4px) rotate(-9deg);}
+  #bigpaw.wig2{transform:translate(18px,-4px) rotate(9deg);}
+  #bigpaw.wL{transform:translate(-72px,-96px) rotate(-30deg);}
+  #bigpaw.wC{transform:translate(0,-116px);}
+  #bigpaw.wR{transform:translate(72px,-96px) rotate(30deg);}
   #ppcenter{
     position:absolute; left:0; right:0; top:0; bottom:0; z-index:6;
     display:flex; align-items:center; justify-content:center; pointer-events:none;
@@ -391,8 +417,13 @@
     <button class="backlink" id="ppWatchBack" style="display:none;">‹ Back to games</button>
     <div id="ppscore"></div>
     <div id="ppstage">
-      <div class="pslot" id="slotL"></div>
-      <div class="pslot" id="slotR"></div>
+      <div id="pprole"></div>
+      <div id="dodgerArea">
+        <div id="catBody"></div>
+        <div id="catHead"></div>
+      </div>
+      <div id="bigpaw"></div>
+      <div id="dodgerTag"></div>
       <div id="ppcenter"></div>
     </div>
     <div id="ppbar"><div id="ppbarin"></div></div>
@@ -481,13 +512,49 @@ function catSVG(cat){
     '</g></svg>';
 }
 
-function pawSVG(){
-  return '<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
-    '<ellipse cx="22" cy="27" rx="12" ry="10" fill="#F2A9A0" stroke="#C97F76" stroke-width="2"/>' +
-    '<circle cx="10" cy="14" r="4.6" fill="#F2A9A0" stroke="#C97F76" stroke-width="2"/>' +
-    '<circle cx="19" cy="9.5" r="4.6" fill="#F2A9A0" stroke="#C97F76" stroke-width="2"/>' +
-    '<circle cx="28" cy="10.5" r="4.6" fill="#F2A9A0" stroke="#C97F76" stroke-width="2"/>' +
-    '<circle cx="36" cy="17" r="4.2" fill="#F2A9A0" stroke="#C97F76" stroke-width="2"/>' +
+var CAT_COLORS = {
+  tuxedo:{body:'#3B342C', line:'#241F19', belly:'#FFFDF6'},
+  orange:{body:'#F0A03C', line:'#B96F1E', belly:'#F9D9A9'},
+  white:{body:'#FFFDF6', line:'#C4B8A5', belly:'#FFF7E6'},
+  calico:{body:'#FFFDF6', line:'#C4B8A5', belly:'#FFF7E6'},
+  gray:{body:'#9FA6AD', line:'#6E767E', belly:'#C9CED4'},
+  siamese:{body:'#F3E7D3', line:'#C9B394', belly:'#EBDCC2'}
+};
+
+function bigPawSVG(cat){
+  var c = CAT_COLORS[cat] || CAT_COLORS.orange;
+  return '<svg viewBox="0 0 96 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+    '<rect x="30" y="72" width="36" height="38" rx="14" fill="' + c.body + '" stroke="' + c.line + '" stroke-width="3"/>' +
+    '<circle cx="15" cy="34" r="11" fill="' + c.body + '" stroke="' + c.line + '" stroke-width="3"/>' +
+    '<circle cx="38" cy="22" r="12" fill="' + c.body + '" stroke="' + c.line + '" stroke-width="3"/>' +
+    '<circle cx="61" cy="22" r="12" fill="' + c.body + '" stroke="' + c.line + '" stroke-width="3"/>' +
+    '<circle cx="83" cy="34" r="11" fill="' + c.body + '" stroke="' + c.line + '" stroke-width="3"/>' +
+    '<ellipse cx="49" cy="58" rx="30" ry="24" fill="' + c.body + '" stroke="' + c.line + '" stroke-width="3"/>' +
+    '<circle cx="15" cy="34" r="5" fill="#F2A9A0"/>' +
+    '<circle cx="38" cy="22" r="5.5" fill="#F2A9A0"/>' +
+    '<circle cx="61" cy="22" r="5.5" fill="#F2A9A0"/>' +
+    '<circle cx="83" cy="34" r="5" fill="#F2A9A0"/>' +
+    '<ellipse cx="49" cy="60" rx="17" ry="13" fill="#F2A9A0"/>' +
+    '</svg>';
+}
+
+function catBodySVG(cat){
+  var c = CAT_COLORS[cat] || CAT_COLORS.orange;
+  var extra = '';
+  if (cat === 'calico'){
+    extra = '<circle cx="34" cy="48" r="11" fill="#F0A03C"/><circle cx="86" cy="44" r="9" fill="#3B342C"/>';
+  } else if (cat === 'orange'){
+    extra = '<path d="M22 46 L32 50 M20 58 L31 60" stroke="#D3822A" stroke-width="4" stroke-linecap="round" fill="none"/>';
+  }
+  return '<svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+    '<path d="M96 72 C118 64 120 40 104 34" fill="none" stroke="' + c.line + '" stroke-width="15" stroke-linecap="round"/>' +
+    '<path d="M96 72 C118 64 120 40 104 34" fill="none" stroke="' + c.body + '" stroke-width="10" stroke-linecap="round"/>' +
+    '<ellipse cx="58" cy="60" rx="40" ry="35" fill="' + c.body + '" stroke="' + c.line + '" stroke-width="2.5"/>' +
+    extra +
+    '<ellipse cx="58" cy="70" rx="22" ry="19" fill="' + c.belly + '"/>' +
+    '<rect x="36" y="80" width="17" height="18" rx="8.5" fill="' + c.body + '" stroke="' + c.line + '" stroke-width="2.5"/>' +
+    '<rect x="63" y="80" width="17" height="18" rx="8.5" fill="' + c.body + '" stroke="' + c.line + '" stroke-width="2.5"/>' +
+    '<path d="M41.5 92 L41.5 96 M47.5 92 L47.5 96 M68.5 92 L68.5 96 M74.5 92 L74.5 96" stroke="' + c.line + '" stroke-width="1.6" stroke-linecap="round" fill="none"/>' +
     '</svg>';
 }
 
@@ -865,7 +932,9 @@ function renderLobby(){
 
 function renderGameStatic(turnIdx){
   show('scr-game');
-  $('watchBack').style.display = (YOU < 0) ? '' : 'none';
+  var bk = $('watchBack');
+  bk.style.display = '';
+  bk.textContent = (YOU >= 0) ? '‹ Quit game' : '‹ Back to games';
   if (!cellEls.length) buildBoard();
   ensureTokens();
   renderChips(turnIdx);
@@ -938,10 +1007,13 @@ function renderOver(){
     '<h2>' + esc(winner.name) + ' wins!</h2>' +
     '<div class="wsub">The snack champion of the neighborhood 🍪</div>' +
     rows +
-    (YOU >= 0 ? '<button class="btn" id="againBtn" style="margin-top:8px;">Play again</button>'
+    (YOU >= 0 ? '<button class="btn" id="againBtn" style="margin-top:8px;">Play again</button><button class="btn ghost" id="overLeaveBtn" style="margin-top:8px;">Back to games</button>'
       : '<button class="btn ghost" id="overBackBtn" style="margin-top:8px;">Back to games</button>');
   ov.classList.add('on');
-  if (YOU >= 0) $('againBtn').onclick = function(){ socket.emit('again'); };
+  if (YOU >= 0){
+    $('againBtn').onclick = function(){ socket.emit('again'); };
+    $('overLeaveBtn').onclick = function(){ socket.emit('leave'); YOU = -1; WATCH = null; ov.classList.remove('on'); route(); };
+  }
   else $('overBackBtn').onclick = function(){ WATCH = null; ov.classList.remove('on'); route(); };
 }
 
@@ -968,43 +1040,42 @@ function renderPPLobby(){
   $('ppStartBtn').textContent = PS.players.length === 1 ? 'Start vs a bot 🤖' : 'Start duel!';
 }
 
-function ppSlots(){
-  var ptr = PS.pointer;
-  return [ptr, 1 - ptr];
+function stageFill(){
+  var P = PS.players;
+  if (P.length < 2) return;
+  var ptr = PS.pointer, dg = 1 - ptr;
+  $('catBody').innerHTML = catBodySVG(P[dg].cat);
+  $('catHead').innerHTML = catSVG(P[dg].cat);
+  $('catHead').className = '';
+  $('dodgerArea').classList.remove('hitshake');
+  $('bigpaw').innerHTML = bigPawSVG(P[ptr].cat);
+  $('bigpaw').className = '';
+  $('dodgerTag').textContent = '🙀 ' + P[dg].name + (dg === PYOU ? ' (you)' : '') + (P[dg].isBot ? ' 🤖' : '');
+  var el = $('pprole');
+  if (PYOU === ptr){
+    el.innerHTML = '🐾 Your paw! Guess where ' + esc(P[dg].name) + ' dodges';
+    el.className = 'paw';
+  } else if (PYOU === dg){
+    el.innerHTML = '🙀 You dodge! Turn away from ' + esc(P[ptr].name) + "'s paw";
+    el.className = 'dodge';
+  } else {
+    el.innerHTML = '🐾 ' + esc(P[ptr].name) + ' points · 🙀 ' + esc(P[dg].name) + ' dodges';
+    el.className = '';
+  }
 }
 
 function renderPPGame(){
   show('scr-ppgame');
-  $('ppWatchBack').style.display = (PYOU < 0) ? '' : 'none';
-  var sc = $('ppscore');
-  if (PS.players.length === 2){
-    var pipsFor = function(n){
-      var h = '<span class="pips">';
-      for (var i = 0; i < 5; i++) h += '<span class="' + (i < n ? 'on' : '') + '"></span>';
-      return h + '</span>';
-    };
-    sc.innerHTML = catSVG(PS.players[0].cat) + pipsFor(PS.scores[0]) +
-      '<span class="sc">' + PS.scores[0] + ' : ' + PS.scores[1] + '</span>' +
-      pipsFor(PS.scores[1]) + catSVG(PS.players[1].cat);
-  }
-  var slots = ppSlots();
-  fillSlot($('slotL'), slots[0], true);
-  fillSlot($('slotR'), slots[1], false);
+  var bk = $('ppWatchBack');
+  bk.style.display = '';
+  bk.textContent = (PYOU >= 0) ? '‹ Quit duel' : '‹ Back to games';
+  renderPPGameScoreOnly();
+  stageFill();
   if (!ppRoundOn){
     setPPButtons(false);
     if (PS.phase === 'playing') $('ppstatus').textContent = 'Get ready...';
     else if (PS.phase === 'over') $('ppstatus').textContent = '🎉 Duel over!';
   }
-}
-
-function fillSlot(el, pi, isPointer){
-  var p = PS.players[pi];
-  if (!p){ el.innerHTML = ''; return; }
-  el.innerHTML = '<div class="face-wrap" id="face' + pi + '">' + catSVG(p.cat) +
-    (isPointer ? '<div class="pawicon" id="pawic" style="left:26px;">' + pawSVG() + '</div>' : '') +
-    '</div>' +
-    '<div><span class="role">' + (isPointer ? '🐾 Paw' : '🙀 Dodge') + '</span></div>' +
-    '<div class="pname">' + esc(p.name) + (pi === PYOU ? ' (you)' : '') + (p.isBot ? ' 🤖' : '') + '</div>';
 }
 
 function setPPButtons(enabled){
@@ -1033,22 +1104,24 @@ async function onPPRound(payload){
   ppRoundOn = true;
   renderPPGame();
   ppCenter('');
-  $('face0') && ($('face0').className = 'face-wrap');
-  $('face1') && ($('face1').className = 'face-wrap');
   var meIn = PYOU >= 0;
-  $('ppstatus').textContent = 'Round ' + payload.round + ' — eyes up!';
+  $('ppstatus').textContent = 'Round ' + payload.round + ' — eyes on the paw!';
   var counts = ['3','2','1'];
   for (var i = 0; i < counts.length; i++){
     ppCenter('<div class="big">' + counts[i] + '</div>');
+    $('bigpaw').className = (i % 2 === 0) ? 'wig1' : 'wig2';
     await wait(700);
   }
+  $('bigpaw').className = '';
   ppCenter('<div class="big">PAW!</div>');
   await wait(350);
   ppCenter('');
   if (!ppRoundOn) return;
   if (meIn && !ppPicked){
     setPPButtons(true);
-    var myRole = (PS.pointer === PYOU) ? '🐾 You point — guess their dodge!' : '🙀 You dodge — pick a direction!';
+    var myRole = (PS.pointer === PYOU)
+      ? '🐾 Point! Where will ' + PS.players[1 - PS.pointer].name + ' dodge?'
+      : '🙀 Dodge! Pick a direction!';
     $('ppstatus').textContent = myRole;
     ppBar(2600);
   } else {
@@ -1063,17 +1136,16 @@ async function onPPResult(payload){
   $('ppbarin').style.width = '0%';
   var ptr = payload.pointer, dodger = 1 - ptr;
   var dirCls = ['dirL','dirC','dirR'];
-  var f0 = $('face' + dodger);
-  if (f0) f0.className = 'face-wrap ' + dirCls[payload.picks[dodger]];
-  var f1 = $('face' + ptr);
-  if (f1) f1.className = 'face-wrap ' + dirCls[payload.picks[ptr]];
-  var pawic = $('pawic');
-  if (pawic){
-    var lefts = ['-14px','26px','66px'];
-    pawic.style.left = lefts[payload.picks[ptr]];
+  var pawCls = ['wL','wC','wR'];
+  $('catHead').className = dirCls[payload.picks[dodger]];
+  $('bigpaw').className = pawCls[payload.picks[ptr]];
+  await wait(700);
+  if (payload.match){
+    $('dodgerArea').classList.add('hitshake');
+    ppCenter('<div class="banner">🎯 HIT! +1</div>');
+  } else {
+    ppCenter('<div class="banner">💨 MISS!</div>');
   }
-  await wait(650);
-  ppCenter('<div class="banner">' + (payload.match ? '🎯 HIT! +1' : '💨 MISS!') + '</div>');
   PS = payload.state; PYOU = payload.you;
   renderPPGameScoreOnly();
   await wait(1600);
@@ -1083,7 +1155,7 @@ async function onPPResult(payload){
     renderPPGame();
     renderPPOver();
   } else {
-    $('ppstatus').textContent = '🔄 Switching sides...';
+    $('ppstatus').textContent = '🔄 Paws switch! Next round...';
   }
 }
 
@@ -1113,10 +1185,13 @@ function renderPPOver(){
     '<div class="rrow"><span class="medal">🥈</span>' + catSVG(PS.players[l].cat) +
     '<span class="rn">' + esc(PS.players[l].name) + (l === PYOU ? ' (you)' : '') + (PS.players[l].isBot ? ' 🤖' : '') + '</span>' +
     '<span class="rs">' + PS.scores[l] + '</span></div>' +
-    (PYOU >= 0 ? '<button class="btn" id="ppAgainBtn" style="margin-top:8px;">Play again</button>'
+    (PYOU >= 0 ? '<button class="btn" id="ppAgainBtn" style="margin-top:8px;">Play again</button><button class="btn ghost" id="ppOverLeaveBtn" style="margin-top:8px;">Back to games</button>'
       : '<button class="btn ghost" id="ppOverBackBtn" style="margin-top:8px;">Back to games</button>');
   ov.classList.add('on');
-  if (PYOU >= 0) $('ppAgainBtn').onclick = function(){ socket.emit('pp_again'); };
+  if (PYOU >= 0){
+    $('ppAgainBtn').onclick = function(){ socket.emit('pp_again'); };
+    $('ppOverLeaveBtn').onclick = function(){ socket.emit('pp_leave'); PYOU = -1; WATCH = null; ov.classList.remove('on'); route(); };
+  }
   else $('ppOverBackBtn').onclick = function(){ WATCH = null; ov.classList.remove('on'); route(); };
 }
 
@@ -1142,8 +1217,27 @@ $('cardPaw').onclick = function(){
 };
 $('kediBack').onclick = function(){ socket.emit('leave'); YOU = -1; route(); };
 $('pawBack').onclick = function(){ socket.emit('pp_leave'); PYOU = -1; route(); };
-$('watchBack').onclick = function(){ WATCH = null; route(); };
-$('ppWatchBack').onclick = function(){ WATCH = null; route(); };
+$('watchBack').onclick = function(){
+  if (YOU >= 0){
+    if (!confirm('Leave this game? Your Kedi keeps playing as a bot 🤖')) return;
+    socket.emit('leave');
+    YOU = -1;
+  }
+  WATCH = null;
+  $('overOverlay').classList.remove('on');
+  route();
+};
+$('ppWatchBack').onclick = function(){
+  if (PYOU >= 0){
+    if (!confirm('Leave the duel? A bot takes over your paw 🤖')) return;
+    socket.emit('pp_leave');
+    PYOU = -1;
+    ppRoundOn = false;
+  }
+  WATCH = null;
+  $('overOverlay').classList.remove('on');
+  route();
+};
 $('startBtn').onclick = function(){ socket.emit('start'); };
 $('ppStartBtn').onclick = function(){ socket.emit('pp_start'); };
 $('rollbtn').onclick = function(){

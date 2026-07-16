@@ -498,11 +498,35 @@ io.on('connection', (socket) => {
 
   socket.on('leave', () => {
     const p = kediByPid(socket.data.pid);
-    if (p && game.phase === 'lobby') {
+    if (!p) return;
+    socket.data.pid = null;
+    if (game.phase === 'lobby') {
       game.players = game.players.filter(q => q !== p);
       glog('👋 ' + p.name + ' left the Kedi Life lobby');
-      broadcastState();
+    } else {
+      p.isBot = true;
+      glog('🚪 ' + p.name + ' left Kedi Life — a bot takes over');
+      if (game.players.every(q => q.isBot)) {
+        clearTimer();
+        game = freshGame();
+        glog('🧹 Kedi Life 초기화 (모두 나감)');
+      } else if (game.phase === 'playing') {
+        const pIdx = game.players.indexOf(p);
+        if (game.await && game.await.pIdx === pIdx) {
+          clearTimer();
+          game.timer = setTimeout(() => {
+            if (game.await && game.await.pIdx === pIdx) {
+              const o = game.await.options;
+              resumeWalk(pIdx, o[Math.floor(Math.random() * o.length)]);
+            }
+          }, 1500 * SPEED);
+        } else if (cur() === p && !game.busy) {
+          clearTimer();
+          game.timer = setTimeout(() => playRoll(p), 1400 * SPEED);
+        }
+      }
     }
+    broadcastState();
   });
 
   socket.on('start', () => {
@@ -565,11 +589,27 @@ io.on('connection', (socket) => {
 
   socket.on('pp_leave', () => {
     const p = pawByPid(socket.data.pid);
-    if (p && paw.phase === 'lobby') {
+    if (!p) return;
+    socket.data.pid = null;
+    if (paw.phase === 'lobby') {
       paw.players = paw.players.filter(q => q !== p);
       glog('👋 ' + p.name + ' left the Paw lobby');
-      ppBroadcast();
+    } else {
+      p.isBot = true;
+      glog('🚪 ' + p.name + ' left Paw Paw Paw — a bot takes over');
+      if (paw.players.every(q => q.isBot)) {
+        pawClearTimer();
+        paw = freshPaw();
+        glog('🧹 Paw Paw Paw 초기화 (모두 나감)');
+      } else if (paw.phase === 'playing' && !paw.resolving) {
+        const i = paw.players.indexOf(p);
+        if (i >= 0 && paw.picks[i] == null) {
+          paw.picks[i] = Math.floor(Math.random() * 3);
+          pawMaybeResolve();
+        }
+      }
     }
+    ppBroadcast();
   });
 
   socket.on('pp_start', () => {
