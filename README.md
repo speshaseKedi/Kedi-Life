@@ -1,21 +1,35 @@
-# Kedi Life 🐾
+# Kedi Games 🐾
 
-친구들과 하는 고양이 인생게임 (2~4인 · 혼자면 봇 참가).
-주사위를 굴려 보드를 이동하며 이벤트를 겪고, 집에 도착했을 때 간식(🍪)을 가장 많이 모은 고양이가 우승합니다.
+친구들과 하는 고양이 미니게임 모음. 링크를 열고, 고양이를 고르고, 게임을 선택하면 끝!
 
-## 구성
-- `server.js` — 게임 서버 (규칙, 턴 진행, 봇)
-- `public/index.html` — 게임 화면 (모바일 최적화)
-- `package.json` — 실행 설정
+**게임**
+- **Kedi Life** 🎲 — 2~4인 보드 레이스. 주사위를 굴려 갈림길(🪧)에서 길을 고르고, 간식을 가장 많이 모아 집에 도착하면 우승. 혼자면 봇이 참가해요.
+- **Paw Paw Paw!** 🐾 — 1대1 순발력 대결. 3·2·1 카운트 후 좌/중/우를 동시에 선택. 방향이 겹치면 발바닥 쪽 득점, 5점 선취 승. 혼자면 봇과 대결.
 
-## 로컬 실행 (선택)
+**기능**: 우측 상단 접속자 수 표시 · `/log?key=...` 비공개 게임 기록 (LOG_KEY 환경변수 필요)
+
+---
+
+## English
+
+Cozy cat mini-games to play with friends. Open the link, pick your Kedi, choose a game — that's it!
+
+**Games**
+- **Kedi Life** 🎲 — A board race for 2–4 players. Roll the dice, choose your path at signposts (🪧), collect the most snacks, and get home. A bot Kedi joins if you play alone.
+- **Paw Paw Paw!** 🐾 — A 1 vs 1 reflex duel. On "3·2·1, Paw!" both players pick left / center / right at the same time. Matching directions scores a point for the paw — first to 5 wins. Playing solo? You duel a bot.
+
+**Features**: live player counter (top right) · private game log at `/log?key=...` (requires the LOG_KEY env variable)
+
+---
+
+## Run locally · 로컬 실행 (optional)
 ```
 npm install
 npm start
 ```
-브라우저에서 http://localhost:3000 접속
+Then open · 접속: http://localhost:3000
 
-## 배포 (Render)
-- Build Command: `npm install`
-- Start Command: `npm start`
-- 무료 플랜이면 15분간 접속이 없을 때 잠들고, 다음 접속 시 30~60초 후 깨어납니다.
+## Deploy · 배포 (Render)
+- Build Command: `npm install` · Start Command: `npm start`
+- The free plan sleeps after 15 minutes of inactivity and wakes in 30–60s on the next visit.
+- 무료 플랜은 15분간 접속이 없으면 잠들고, 다음 접속 시 30~60초 후 깨어나요.

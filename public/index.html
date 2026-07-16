@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Kedi Life 🐾</title>
+<title>Kedi Games 🐾</title>
 <meta name="theme-color" content="#FDEBD2">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐱</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,12 +27,22 @@
   #app{max-width:440px; margin:0 auto; padding:14px 14px 26px;}
   header{display:flex; align-items:center; gap:10px; padding:4px 2px 12px;}
   header .logo-cat{width:40px; height:40px;}
-  header h1{font-family:'Fredoka',sans-serif; font-weight:600; font-size:26px; margin:0; letter-spacing:.5px;}
-  header p{margin:0; font-size:12.5px; color:var(--ink-soft);}
+  header h1{font-family:'Fredoka',sans-serif; font-weight:600; font-size:24px; margin:0; letter-spacing:.5px;}
+  header p{margin:0; font-size:12px; color:var(--ink-soft);}
+  #online{
+    margin-left:auto; flex:none;
+    background:var(--card); border:2px solid var(--line); border-radius:99px;
+    padding:5px 11px; font-size:13px; font-weight:800; color:var(--teal);
+  }
   h2{font-family:'Fredoka',sans-serif; font-weight:600; font-size:20px; margin:6px 0 12px;}
   .screen{display:none;}
   .screen.on{display:block;}
   .note{font-size:13px; color:var(--ink-soft); margin:10px 2px;}
+  .backlink{
+    display:inline-block; background:none; border:none; cursor:pointer;
+    font:inherit; font-size:13.5px; font-weight:800; color:var(--ink-soft);
+    padding:2px 4px; margin-bottom:6px;
+  }
   .btn{
     display:block; width:100%; border:none; cursor:pointer;
     font-family:'Fredoka',sans-serif; font-weight:600; font-size:18px;
@@ -53,14 +63,40 @@
   .cat-card svg{width:64px; height:64px;}
   .cat-card .cname{font-family:'Fredoka',sans-serif; font-size:15px; margin-top:2px;}
   .cat-card.sel{border-color:var(--accent); transform:scale(1.03); background:#FFF3E2;}
-  .cat-card.taken{opacity:.45; filter:grayscale(.7); pointer-events:none;}
-  .cat-card .tag{font-size:11px; color:var(--danger); font-weight:800; height:13px;}
   input[type=text]{
     width:100%; font:inherit; font-size:16px; color:var(--ink);
     background:var(--card); border:2.5px solid var(--line); border-radius:14px;
     padding:12px 14px; margin:2px 0 12px; outline:none;
   }
   input[type=text]:focus{border-color:var(--teal);}
+  .mychip{
+    display:flex; align-items:center; gap:9px;
+    background:var(--card); border:2px solid var(--line); border-radius:16px;
+    padding:8px 12px; margin-bottom:14px;
+  }
+  .mychip svg{width:36px; height:36px;}
+  .mychip .mn{font-weight:800; font-size:15px;}
+  .mychip .chg{
+    margin-left:auto; background:none; border:none; cursor:pointer;
+    font:inherit; font-size:12.5px; font-weight:800; color:var(--teal); text-decoration:underline;
+  }
+  .game-card{
+    background:var(--card); border:2.5px solid var(--line); border-radius:20px;
+    padding:14px 16px; margin-bottom:12px; cursor:pointer;
+    transition:transform .1s, border-color .15s;
+  }
+  .game-card:active{transform:scale(.985);}
+  .game-card .gt{font-family:'Fredoka',sans-serif; font-size:19px;}
+  .game-card .gd{font-size:13px; color:var(--ink-soft); margin-top:3px; line-height:1.45;}
+  .game-card .gs{
+    display:inline-block; margin-top:8px; font-size:12px; font-weight:800;
+    background:#E7F3EF; color:#22574C; border-radius:99px; padding:3px 10px;
+  }
+  .game-card .gs.busy{background:#FFF0C9; color:#7A5A10;}
+  .loglink{
+    display:block; text-align:center; font-size:13px; font-weight:800;
+    color:var(--ink-soft); margin-top:14px; text-decoration:underline;
+  }
   .plist{display:flex; flex-direction:column; gap:8px; margin:6px 0 14px;}
   .prow{
     display:flex; align-items:center; gap:10px;
@@ -74,7 +110,6 @@
   .chip{
     display:flex; align-items:center; gap:7px;
     background:var(--card); border:2px solid var(--line); border-radius:14px; padding:6px 9px;
-    transition:border-color .2s, box-shadow .2s;
   }
   .chip svg{width:28px; height:28px; flex:none;}
   .chip .cn{font-size:13px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:74px;}
@@ -84,26 +119,27 @@
   .chip.done{opacity:.75;}
   #board{
     position:relative; background:var(--grass);
-    border:4px solid var(--grass-deep); border-radius:22px; padding:10px;
+    border:4px solid var(--grass-deep); border-radius:22px;
+    overflow:hidden;
   }
-  #tiles{display:grid; grid-template-columns:repeat(4,1fr); gap:7px;}
+  #paths{position:absolute; left:0; top:0; z-index:0;}
   .cell{
-    position:relative; aspect-ratio:1/1; border-radius:13px;
+    position:absolute; z-index:1; border-radius:13px;
     background:var(--card); border:2px solid #00000014;
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;
-    font-size:11px; font-weight:800; color:var(--ink-soft);
+    font-size:10.5px; font-weight:800; color:var(--ink-soft);
   }
-  .cell .ic{font-size:19px; line-height:1;}
-  .cell .num{position:absolute; top:3px; left:6px; font-size:9px; color:#00000033;}
+  .cell .ic{font-size:17px; line-height:1.1;}
   .cell.gain{background:#EAF6E0;}
   .cell.lose{background:#FBE3DE;}
   .cell.nap{background:#ECE7F8;}
   .cell.swap{background:#FBE7F1;}
   .cell.move{background:#E1F1F5;}
   .cell.chance{background:#FFF3CF;}
+  .cell.fork{background:#FFE7A8; border:2px dashed #C99A2E; color:#7A5A10;}
   .cell.start{background:var(--gold); color:#6B4A12;}
   .cell.home{background:#F7A868; color:#6E3A12;}
-  .cell.start .lb,.cell.home .lb{font-family:'Fredoka',sans-serif; font-size:12px;}
+  .cell.start .lb,.cell.home .lb{font-family:'Fredoka',sans-serif; font-size:11.5px;}
   .token{
     position:absolute; z-index:5; left:0; top:0;
     transition:transform .24s cubic-bezier(.34,1.4,.5,1);
@@ -133,6 +169,64 @@
   #status{font-family:'Fredoka',sans-serif; font-size:15.5px; line-height:1.25;}
   #lastev{font-size:11.5px; color:var(--ink-soft); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   #rollbtn{width:auto; padding:13px 20px; font-size:17px; flex:none;}
+  #ppscore{
+    display:flex; align-items:center; justify-content:center; gap:12px;
+    background:var(--card); border:2px solid var(--line); border-radius:16px;
+    padding:9px 12px; margin-bottom:10px;
+  }
+  #ppscore svg{width:30px; height:30px;}
+  #ppscore .sc{font-family:'Fredoka',sans-serif; font-size:24px;}
+  .pips{display:flex; gap:3px;}
+  .pips span{width:9px; height:9px; border-radius:50%; background:#EFE3CC;}
+  .pips span.on{background:var(--accent);}
+  #ppstage{
+    position:relative; background:var(--grass);
+    border:4px solid var(--grass-deep); border-radius:22px;
+    height:250px; overflow:hidden;
+    display:flex; align-items:center; justify-content:space-around;
+  }
+  .pslot{width:42%; text-align:center; transition:all .3s;}
+  .pslot .face-wrap{display:inline-block; width:96px; height:96px; transition:transform .28s cubic-bezier(.34,1.3,.5,1); position:relative;}
+  .pslot .face-wrap svg{width:100%; height:100%; filter:drop-shadow(0 3px 1px #00000022);}
+  .pslot .role{
+    display:inline-block; margin-top:6px; font-size:12.5px; font-weight:800;
+    background:#FFF9EEDD; border-radius:99px; padding:3px 11px;
+  }
+  .pslot .pname{font-size:13px; font-weight:800; margin-top:4px; color:#334424; text-shadow:0 1px 0 #ffffff66;}
+  .dirL{transform:rotate(-16deg) translateX(-12px);}
+  .dirC{transform:translateY(8px) scale(1.06);}
+  .dirR{transform:rotate(16deg) translateX(12px);}
+  .pawicon{position:absolute; width:44px; height:44px; top:26px; transition:all .25s; filter:drop-shadow(0 2px 1px #00000033);}
+  #ppcenter{
+    position:absolute; left:0; right:0; top:0; bottom:0; z-index:6;
+    display:flex; align-items:center; justify-content:center; pointer-events:none;
+  }
+  #ppcenter .big{
+    font-family:'Fredoka',sans-serif; font-size:56px; color:#fff;
+    text-shadow:0 3px 0 #00000033; animation:pop .3s;
+  }
+  #ppcenter .banner{
+    font-family:'Fredoka',sans-serif; font-size:30px; color:#fff;
+    background:#4A342ACC; border-radius:18px; padding:10px 22px;
+    animation:pop .3s;
+  }
+  #ppbtns{display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px; margin-top:12px;}
+  .paw-btn{
+    border:none; cursor:pointer; font-family:'Fredoka',sans-serif; font-size:16px;
+    color:var(--ink); background:var(--card); border:2.5px solid var(--line);
+    border-radius:16px; padding:15px 6px;
+    box-shadow:0 3px 0 var(--line);
+    transition:transform .08s, opacity .2s;
+  }
+  .paw-btn:active{transform:translateY(2px);}
+  .paw-btn:disabled{opacity:.4; box-shadow:none;}
+  .paw-btn.picked{border-color:var(--accent); background:#FFF3E2;}
+  #ppstatus{
+    font-family:'Fredoka',sans-serif; font-size:15px; text-align:center;
+    margin-top:10px; min-height:20px;
+  }
+  #ppbar{height:7px; background:#EFE3CC; border-radius:99px; margin-top:9px; overflow:hidden;}
+  #ppbarin{height:100%; width:100%; background:var(--teal); border-radius:99px;}
   #eventOverlay{
     position:fixed; inset:0; z-index:40; display:none;
     align-items:center; justify-content:center; pointer-events:none;
@@ -151,6 +245,29 @@
   .edl.up{background:#DFF2D2; color:#2F6B1E;}
   .edl.down{background:#FBDCD6; color:#A33326;}
   @keyframes pop{0%{transform:scale(.6); opacity:0}100%{transform:scale(1); opacity:1}}
+  #choiceOverlay{
+    position:fixed; inset:0; z-index:45; display:none;
+    align-items:center; justify-content:center; background:#4A342A55; padding:18px;
+  }
+  #choiceOverlay.on{display:flex;}
+  #choiceCard{
+    background:var(--card); border:3px solid var(--ink); border-radius:22px;
+    box-shadow:0 8px 0 #00000025; padding:18px;
+    width:100%; max-width:330px; text-align:center;
+    animation:pop .28s cubic-bezier(.34,1.5,.5,1);
+  }
+  #choiceCard .cic{font-size:40px;}
+  #choiceCard .ctx{font-family:'Fredoka',sans-serif; font-size:18px; margin:4px 0 12px;}
+  .choice-btn{
+    display:block; width:100%; text-align:left; cursor:pointer;
+    background:#FFF3E2; border:2.5px solid var(--line); border-radius:16px;
+    padding:12px 14px; margin-bottom:9px; font:inherit; color:var(--ink);
+    transition:transform .08s, border-color .15s;
+  }
+  .choice-btn:active{transform:scale(.98);}
+  .choice-btn:hover{border-color:var(--accent);}
+  .choice-btn .cl{font-family:'Fredoka',sans-serif; font-size:16.5px;}
+  .choice-btn .ch{font-size:12.5px; color:var(--ink-soft); margin-top:2px;}
   .float{
     position:absolute; z-index:9; font-weight:800; font-size:15px;
     animation:rise 1.1s ease forwards; pointer-events:none;
@@ -200,35 +317,53 @@
   <header>
     <span class="logo-cat" id="logoCat"></span>
     <div>
-      <h1>Kedi Life</h1>
-      <p>Roll the dice, collect snacks, get home! 🐾</p>
+      <h1>Kedi Games</h1>
+      <p>Cozy games for you and your friends 🐾</p>
     </div>
+    <span id="online">👥 1</span>
   </header>
 
-  <section class="screen" id="scr-join">
+  <section class="screen" id="scr-char">
     <h2>Pick your Kedi!</h2>
     <div class="cat-grid" id="catGrid"></div>
     <input type="text" id="nameInput" maxlength="12" placeholder="Your Kedi's name (e.g. Mochi)">
-    <button class="btn" id="joinBtn">Join the game</button>
-    <p class="note" id="joinNote">2–4 players · playing alone? a bot Kedi joins you 🤖</p>
+    <button class="btn" id="charBtn">Let's go!</button>
+    <p class="note">Your Kedi follows you into every game. You can change it anytime.</p>
+  </section>
+
+  <section class="screen" id="scr-menu">
+    <div class="mychip" id="mychip"></div>
+    <h2>Choose a game</h2>
+    <div class="game-card" id="cardKedi">
+      <div class="gt">🎲 Kedi Life</div>
+      <div class="gd">Board race for 2–4 Kedi. Roll the dice, pick your path at signposts, collect the most snacks!</div>
+      <span class="gs" id="kediStatus">Empty — be the first!</span>
+    </div>
+    <div class="game-card" id="cardPaw">
+      <div class="gt">🐾 Paw Paw Paw!</div>
+      <div class="gd">1 vs 1 reflex duel. Count 3·2·1, pick left · center · right at the same time. First to 5 points wins!</div>
+      <span class="gs" id="pawStatus">Empty — be the first!</span>
+    </div>
   </section>
 
   <section class="screen" id="scr-lobby">
-    <h2>Waiting room</h2>
+    <button class="backlink" id="kediBack">‹ Back to games</button>
+    <h2>Kedi Life · waiting room</h2>
     <div class="lobbytip">
       <span>🔗</span>
-      <span><b>Invite friends:</b> just share this page's link. They open it, pick a Kedi, and hop in!</span>
+      <span><b>Invite friends:</b> share this page's link. They open it, pick a Kedi, and hop in!</span>
     </div>
     <div class="plist" id="lobbyList"></div>
     <button class="btn ghost" id="copyBtn" style="margin-bottom:10px;">Copy invite link</button>
     <button class="btn" id="startBtn">Start game</button>
-    <p class="note">Everyone starts at 🏁 and races home 🏠. Most snacks wins!</p>
+    <p class="note">Everyone starts at 🏁 and races home 🏠. Watch for signposts 🪧 — you choose the path! Most snacks wins.</p>
   </section>
 
   <section class="screen" id="scr-game">
+    <button class="backlink" id="watchBack" style="display:none;">‹ Back to games</button>
     <div id="chips"></div>
     <div id="board">
-      <div id="tiles"></div>
+      <svg id="paths"></svg>
     </div>
     <div id="dock">
       <div id="dice"></div>
@@ -239,9 +374,39 @@
       <button class="btn" id="rollbtn">Roll!</button>
     </div>
   </section>
+
+  <section class="screen" id="scr-pplobby">
+    <button class="backlink" id="pawBack">‹ Back to games</button>
+    <h2>Paw Paw Paw · waiting room</h2>
+    <div class="lobbytip">
+      <span>🐾</span>
+      <span><b>How to play:</b> one Kedi points with a paw, one dodges. On "Paw!" both pick a direction. Same direction = point for the paw! Sides swap every round. First to 5 wins.</span>
+    </div>
+    <div class="plist" id="ppLobbyList"></div>
+    <button class="btn ghost" id="ppCopyBtn" style="margin-bottom:10px;">Copy invite link</button>
+    <button class="btn" id="ppStartBtn">Start duel</button>
+  </section>
+
+  <section class="screen" id="scr-ppgame">
+    <button class="backlink" id="ppWatchBack" style="display:none;">‹ Back to games</button>
+    <div id="ppscore"></div>
+    <div id="ppstage">
+      <div class="pslot" id="slotL"></div>
+      <div class="pslot" id="slotR"></div>
+      <div id="ppcenter"></div>
+    </div>
+    <div id="ppbar"><div id="ppbarin"></div></div>
+    <div id="ppbtns">
+      <button class="paw-btn" data-dir="0">◀ Left</button>
+      <button class="paw-btn" data-dir="1">● Center</button>
+      <button class="paw-btn" data-dir="2">▶ Right</button>
+    </div>
+    <div id="ppstatus">…</div>
+  </section>
 </div>
 
 <div id="eventOverlay"><div id="eventCard"></div></div>
+<div id="choiceOverlay"><div id="choiceCard"></div></div>
 <div id="overOverlay"><div id="overCard"></div></div>
 <div id="toast"></div>
 
@@ -249,55 +414,80 @@
 <script>
 "use strict";
 var socket = io();
-var BOARDC = null, S = null, YOU = -1;
+var BOARDC = null, S = null, YOU = -1, PS = null, PYOU = -1;
 var animating = false, pending = null;
 var POS = [], SNACKS = [];
 var selCat = null;
 var tokenEls = {};
+var cellEls = [];
+var LAYOUT = { pad: 12, gap: 7, cell: 60, w: 0, h: 0 };
+var CHOICE = null;
+var WATCH = null;
+var ppPicked = false, ppRoundOn = false, ppBarTimer = null;
 var uidc = 0;
 
 var CAT_INFO = {
-  tuxedo:{label:'Tuxedo'}, orange:{label:'Orange'}, white:{label:'White'}, calico:{label:'Calico'}
+  tuxedo:{label:'Tuxedo'}, orange:{label:'Orange'}, white:{label:'White'},
+  calico:{label:'Calico'}, gray:{label:'Gray'}, siamese:{label:'Siamese'}
 };
 
 function catSVG(cat){
   uidc++;
   var id = 'cc' + uidc;
   var c = {
-    tuxedo:{body:'#3B342C', line:'#241F19', earL:'#3B342C', earR:'#3B342C', eye:'#F5C542'},
-    orange:{body:'#F0A03C', line:'#B96F1E', earL:'#F0A03C', earR:'#F0A03C', eye:'#4A342A'},
-    white:{body:'#FFFDF6', line:'#C4B8A5', earL:'#FFFDF6', earR:'#FFFDF6', eye:'#5D95CB'},
-    calico:{body:'#FFFDF6', line:'#C4B8A5', earL:'#F0A03C', earR:'#3B342C', eye:'#5FA86B'}
+    tuxedo:{body:'#3B342C', line:'#241F19', earL:'#3B342C', earR:'#3B342C', eye:'#F5C542', wsk:'#8A7362'},
+    orange:{body:'#F0A03C', line:'#B96F1E', earL:'#F0A03C', earR:'#F0A03C', eye:'#4A342A', wsk:'#B96F1E'},
+    white:{body:'#FFFDF6', line:'#C4B8A5', earL:'#FFFDF6', earR:'#FFFDF6', eye:'#5D95CB', wsk:'#C4B8A5'},
+    calico:{body:'#FFFDF6', line:'#C4B8A5', earL:'#F0A03C', earR:'#3B342C', eye:'#5FA86B', wsk:'#C4B8A5'},
+    gray:{body:'#9FA6AD', line:'#6E767E', earL:'#9FA6AD', earR:'#9FA6AD', eye:'#E8B44A', wsk:'#6E767E'},
+    siamese:{body:'#F3E7D3', line:'#C9B394', earL:'#8A6E55', earR:'#8A6E55', eye:'#5D95CB', wsk:'#A98F72'}
   }[cat];
-  var patches = '';
+  var extra = '';
   if (cat === 'calico'){
-    patches = '<g clip-path="url(#'+id+')">' +
-      '<circle cx="21" cy="26" r="10" fill="#F0A03C"/>' +
-      '<circle cx="44" cy="25" r="8" fill="#3B342C"/></g>';
-  }
-  var stripes = '';
-  if (cat === 'orange'){
-    stripes = '<g clip-path="url(#'+id+')" stroke="#D3822A" stroke-width="3" stroke-linecap="round">' +
+    extra = '<g clip-path="url(#'+id+')">' +
+      '<circle cx="21" cy="25" r="10" fill="#F0A03C"/>' +
+      '<circle cx="44" cy="24" r="8" fill="#3B342C"/></g>';
+  } else if (cat === 'orange'){
+    extra = '<g clip-path="url(#'+id+')" stroke="#D3822A" stroke-width="3" stroke-linecap="round">' +
       '<path d="M26 16 L28 24" fill="none"/><path d="M32 15 L32 23" fill="none"/><path d="M38 16 L36 24" fill="none"/></g>';
+  } else if (cat === 'siamese'){
+    extra = '<ellipse cx="32" cy="44" rx="11" ry="7.5" fill="#B29377"/>';
+  } else if (cat === 'tuxedo'){
+    extra = '<ellipse cx="32" cy="44" rx="11" ry="8" fill="#FFFDF6"/>';
   }
-  var muzzle = (cat === 'tuxedo') ? '<ellipse cx="32" cy="43" rx="11" ry="8.5" fill="#FFFDF6"/>' : '';
+  var earStroke = (cat === 'siamese') ? '#6E543D' : c.line;
   return '<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
     '<defs><clipPath id="'+id+'"><circle cx="32" cy="37" r="21"/></clipPath></defs>' +
-    '<polygon points="13,28 16,8 29,19" fill="'+c.earL+'" stroke="'+c.line+'" stroke-width="2.5" stroke-linejoin="round"/>' +
-    '<polygon points="51,28 48,8 35,19" fill="'+c.earR+'" stroke="'+c.line+'" stroke-width="2.5" stroke-linejoin="round"/>' +
-    '<polygon points="16.5,24 18,13 25,19" fill="#F2A9A0"/>' +
-    '<polygon points="47.5,24 46,13 39,19" fill="#F2A9A0"/>' +
+    '<g stroke-linejoin="round">' +
+    '<polygon points="12,29 15,7 30,19" fill="'+c.earL+'" stroke="'+earStroke+'" stroke-width="3"/>' +
+    '<polygon points="52,29 49,7 34,19" fill="'+c.earR+'" stroke="'+earStroke+'" stroke-width="3"/>' +
+    '<polygon points="16.5,24 18.5,12 26,18.5" fill="#F2A9A0"/>' +
+    '<polygon points="47.5,24 45.5,12 38,18.5" fill="#F2A9A0"/>' +
     '<circle cx="32" cy="37" r="21" fill="'+c.body+'" stroke="'+c.line+'" stroke-width="2.5"/>' +
-    patches + stripes + muzzle +
-    '<ellipse cx="24.5" cy="34" rx="3.2" ry="4" fill="'+c.eye+'"/>' +
-    '<ellipse cx="39.5" cy="34" rx="3.2" ry="4" fill="'+c.eye+'"/>' +
-    '<circle cx="25.5" cy="32.6" r="1.1" fill="#fff"/>' +
-    '<circle cx="40.5" cy="32.6" r="1.1" fill="#fff"/>' +
-    '<polygon points="32,40 29.6,42.4 34.4,42.4" fill="#E98A80"/>' +
-    '<path d="M32 42.5 Q32 46 28.5 46.5 M32 42.5 Q32 46 35.5 46.5" fill="none" stroke="'+ (cat==='tuxedo'?'#241F19':c.line) +'" stroke-width="1.8" stroke-linecap="round"/>' +
-    '<g stroke="'+ (cat==='tuxedo'?'#8A7362':c.line) +'" stroke-width="1.6" stroke-linecap="round">' +
-    '<path d="M18 40 L8 38" fill="none"/><path d="M18 44 L9 45" fill="none"/>' +
-    '<path d="M46 40 L56 38" fill="none"/><path d="M46 44 L55 45" fill="none"/></g>' +
+    extra +
+    '<ellipse cx="24.5" cy="33.5" rx="4.2" ry="5.5" fill="'+c.eye+'"/>' +
+    '<ellipse cx="39.5" cy="33.5" rx="4.2" ry="5.5" fill="'+c.eye+'"/>' +
+    '<circle cx="23" cy="31.4" r="1.7" fill="#fff"/>' +
+    '<circle cx="38" cy="31.4" r="1.7" fill="#fff"/>' +
+    '<circle cx="26.1" cy="35.9" r=".8" fill="#fff"/>' +
+    '<circle cx="41.1" cy="35.9" r=".8" fill="#fff"/>' +
+    '<ellipse cx="15.5" cy="43" rx="4" ry="2.4" fill="#F2A9A0" opacity=".55"/>' +
+    '<ellipse cx="48.5" cy="43" rx="4" ry="2.4" fill="#F2A9A0" opacity=".55"/>' +
+    '<polygon points="32,41 29.6,43.4 34.4,43.4" fill="#E98A80"/>' +
+    '<path d="M32 43.8 Q32 47.6 27.5 48 M32 43.8 Q32 47.6 36.5 48" fill="none" stroke="'+ (cat==='tuxedo'?'#241F19':(cat==='siamese'?'#6E543D':c.line)) +'" stroke-width="1.8" stroke-linecap="round"/>' +
+    '<g stroke="'+c.wsk+'" stroke-width="1.5" stroke-linecap="round">' +
+    '<path d="M13 39 L3 37" fill="none"/><path d="M13 43 L4 45" fill="none"/>' +
+    '<path d="M51 39 L61 37" fill="none"/><path d="M51 43 L60 45" fill="none"/></g>' +
+    '</g></svg>';
+}
+
+function pawSVG(){
+  return '<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+    '<ellipse cx="22" cy="27" rx="12" ry="10" fill="#F2A9A0" stroke="#C97F76" stroke-width="2"/>' +
+    '<circle cx="10" cy="14" r="4.6" fill="#F2A9A0" stroke="#C97F76" stroke-width="2"/>' +
+    '<circle cx="19" cy="9.5" r="4.6" fill="#F2A9A0" stroke="#C97F76" stroke-width="2"/>' +
+    '<circle cx="28" cy="10.5" r="4.6" fill="#F2A9A0" stroke="#C97F76" stroke-width="2"/>' +
+    '<circle cx="36" cy="17" r="4.2" fill="#F2A9A0" stroke="#C97F76" stroke-width="2"/>' +
     '</svg>';
 }
 
@@ -306,6 +496,13 @@ document.getElementById('logoCat').innerHTML = catSVG('orange');
 function $(id){ return document.getElementById(id); }
 function wait(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
 function esc(s){ return String(s).replace(/[&<>"]/g, function(ch){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]; }); }
+
+function ident(){
+  var n = localStorage.getItem('kedi_name') || '';
+  var c = localStorage.getItem('kedi_cat') || '';
+  if (n && CAT_INFO[c]) return { name: n, cat: c };
+  return null;
+}
 
 function toast(msg){
   var t = $('toast');
@@ -316,45 +513,144 @@ function toast(msg){
 }
 
 function show(scr){
-  ['scr-join','scr-lobby','scr-game'].forEach(function(s){
+  ['scr-char','scr-menu','scr-lobby','scr-game','scr-pplobby','scr-ppgame'].forEach(function(s){
     $(s).classList.toggle('on', s === scr);
   });
 }
 
-function cellIndexFor(pathIdx){
-  var row = Math.floor(pathIdx / 4);
-  var col = pathIdx % 4;
-  if (row % 2 === 1) col = 3 - col;
-  return row * 4 + col;
+function route(){
+  if (ppRoundOn) return;
+  if (S && YOU >= 0){
+    if (S.phase === 'lobby') renderLobby();
+    else { renderGameStatic(S.turn); renderDock(); if (S.phase === 'over') renderOver(); }
+    return;
+  }
+  if (PS && PYOU >= 0){
+    if (PS.phase === 'lobby') renderPPLobby();
+    else { renderPPGame(); if (PS.phase === 'over') renderPPOver(); }
+    return;
+  }
+  if (WATCH === 'kedi' && S && S.phase !== 'lobby'){
+    renderGameStatic(S.turn); renderDock();
+    if (S.phase === 'over') renderOver();
+    return;
+  }
+  if (WATCH === 'paw' && PS && PS.phase !== 'lobby'){
+    renderPPGame();
+    if (PS.phase === 'over') renderPPOver();
+    return;
+  }
+  WATCH = null;
+  $('overOverlay').classList.remove('on');
+  hideChoiceModal();
+  if (!ident()) renderChar();
+  else renderMenu();
+}
+
+function renderChar(){
+  show('scr-char');
+  var id = ident();
+  if (id && !selCat) selCat = id.cat;
+  if (id && !$('nameInput').value) $('nameInput').value = id.name;
+  var g = $('catGrid');
+  g.innerHTML = '';
+  Object.keys(CAT_INFO).forEach(function(key){
+    var d = document.createElement('div');
+    d.className = 'cat-card' + (selCat === key ? ' sel' : '');
+    d.innerHTML = catSVG(key) + '<div class="cname">' + CAT_INFO[key].label + '</div>';
+    d.onclick = function(){ selCat = key; renderChar(); };
+    g.appendChild(d);
+  });
+}
+
+function renderMenu(){
+  show('scr-menu');
+  var id = ident();
+  $('mychip').innerHTML = catSVG(id.cat) +
+    '<span class="mn">' + esc(id.name) + '</span>' +
+    '<button class="chg" id="chgBtn">Change Kedi</button>';
+  $('chgBtn').onclick = function(){ renderChar(); };
+  var ks = $('kediStatus');
+  if (S){
+    if (S.phase === 'lobby'){
+      ks.textContent = S.players.length === 0 ? 'Empty — be the first!' : S.players.length + '/4 in the lobby — join!';
+      ks.className = 'gs';
+    } else {
+      ks.textContent = 'Game in progress (' + S.players.length + ' playing) — tap to watch';
+      ks.className = 'gs busy';
+    }
+  }
+  var ps = $('pawStatus');
+  if (PS){
+    if (PS.phase === 'lobby'){
+      ps.textContent = PS.players.length === 0 ? 'Empty — be the first!' : PS.players.length + '/2 waiting — join!';
+      ps.className = 'gs';
+    } else {
+      ps.textContent = 'Duel in progress — tap to watch';
+      ps.className = 'gs busy';
+    }
+  }
+}
+
+function nodeCenter(id){
+  var nd = BOARDC[id];
+  return {
+    x: LAYOUT.pad + nd.x * (LAYOUT.cell + LAYOUT.gap) + LAYOUT.cell / 2,
+    y: LAYOUT.pad + nd.y * (LAYOUT.cell + LAYOUT.gap) + LAYOUT.cell / 2
+  };
 }
 
 function buildBoard(){
-  var tiles = $('tiles');
-  tiles.innerHTML = '';
-  var cells = new Array(24);
-  for (var p = 0; p < 24; p++){
-    var t = BOARDC[p];
-    var d = document.createElement('div');
-    d.className = 'cell ' + t.t;
-    var sub = '';
-    if (t.t === 'gain') sub = '+' + t.v;
-    else if (t.t === 'lose') sub = '-' + t.v;
-    else if (t.t === 'nap') sub = 'nap';
-    else if (t.t === 'swap') sub = 'swap';
-    else if (t.t === 'move') sub = t.v > 0 ? '+' + t.v + ' ▸' : '◂ ' + (-t.v);
-    else if (t.t === 'chance') sub = '?';
-    var numHtml = (t.t === 'start' || t.t === 'home') ? '' : '<span class="num">' + p + '</span>';
-    var main = (t.t === 'start' || t.t === 'home')
-      ? '<span class="ic">' + t.icon + '</span><span class="lb">' + t.label + '</span>'
-      : '<span class="ic">' + t.icon + '</span><span>' + sub + '</span>';
-    d.innerHTML = numHtml + main;
-    cells[cellIndexFor(p)] = d;
-  }
-  cells.forEach(function(c){ tiles.appendChild(c); });
-  window._cells = cells;
-}
+  if (!BOARDC) return;
+  var board = $('board');
+  var maxX = 0, maxY = 0;
+  BOARDC.forEach(function(nd){ if (nd.x > maxX) maxX = nd.x; if (nd.y > maxY) maxY = nd.y; });
+  var bw = board.clientWidth;
+  if (!bw) return;
+  LAYOUT.cell = (bw - 2 * LAYOUT.pad - maxX * LAYOUT.gap) / (maxX + 1);
+  LAYOUT.w = bw;
+  LAYOUT.h = 2 * LAYOUT.pad + (maxY + 1) * LAYOUT.cell + maxY * LAYOUT.gap;
+  board.style.height = LAYOUT.h + 'px';
 
-function cellEl(pathIdx){ return window._cells[cellIndexFor(pathIdx)]; }
+  var svg = $('paths');
+  svg.setAttribute('width', LAYOUT.w);
+  svg.setAttribute('height', LAYOUT.h);
+  var lines = '';
+  BOARDC.forEach(function(nd){
+    var a = nodeCenter(nd.id);
+    (nd.next || []).forEach(function(nx){
+      var b = nodeCenter(nx);
+      lines += '<line x1="' + a.x + '" y1="' + a.y + '" x2="' + b.x + '" y2="' + b.y +
+        '" stroke="#FFFFFF88" stroke-width="12" stroke-linecap="round"/>';
+    });
+  });
+  svg.innerHTML = lines;
+
+  cellEls.forEach(function(c){ c.remove(); });
+  cellEls = [];
+  BOARDC.forEach(function(nd){
+    var d = document.createElement('div');
+    d.className = 'cell ' + nd.t;
+    var sub = '';
+    if (nd.t === 'gain') sub = '+' + nd.v;
+    else if (nd.t === 'lose') sub = '-' + nd.v;
+    else if (nd.t === 'nap') sub = 'nap';
+    else if (nd.t === 'swap') sub = 'swap';
+    else if (nd.t === 'move') sub = nd.v > 0 ? '+' + nd.v + ' ▸' : '◂ ' + (-nd.v);
+    else if (nd.t === 'chance') sub = '?';
+    else if (nd.t === 'fork') sub = 'pick!';
+    var main = (nd.t === 'start' || nd.t === 'home')
+      ? '<span class="ic">' + nd.icon + '</span><span class="lb">' + nd.label + '</span>'
+      : '<span class="ic">' + nd.icon + '</span><span>' + sub + '</span>';
+    d.innerHTML = main;
+    d.style.width = LAYOUT.cell + 'px';
+    d.style.height = LAYOUT.cell + 'px';
+    d.style.left = (LAYOUT.pad + nd.x * (LAYOUT.cell + LAYOUT.gap)) + 'px';
+    d.style.top = (LAYOUT.pad + nd.y * (LAYOUT.cell + LAYOUT.gap)) + 'px';
+    $('board').appendChild(d);
+    cellEls[nd.id] = d;
+  });
+}
 
 function ensureTokens(){
   var board = $('board');
@@ -373,18 +669,15 @@ function ensureTokens(){
   });
 }
 
-function placeTokens(hop){
-  if (!S || !window._cells) return;
+function placeTokens(){
+  if (!S || !cellEls.length) return;
   var groups = {};
   POS.forEach(function(pos, i){ (groups[pos] = groups[pos] || []).push(i); });
   Object.keys(groups).forEach(function(pos){
     var idxs = groups[pos];
-    var cell = cellEl(+pos);
-    if (!cell) return;
-    var cw = cell.offsetWidth;
-    var size = Math.max(26, cw * 0.56);
-    var cx = cell.offsetLeft + cw / 2;
-    var cy = cell.offsetTop + cell.offsetHeight / 2;
+    var c = nodeCenter(+pos);
+    var cw = LAYOUT.cell;
+    var size = Math.max(24, cw * 0.62);
     var offs = idxs.length === 1 ? [[0,0]] :
       idxs.length === 2 ? [[-0.22,0],[0.22,0]] :
       idxs.length === 3 ? [[-0.22,-0.2],[0.22,-0.2],[0,0.22]] :
@@ -395,8 +688,8 @@ function placeTokens(hop){
       var s = idxs.length > 1 ? size * 0.8 : size;
       el.style.width = s + 'px';
       el.style.height = s + 'px';
-      var x = cx + offs[k][0] * cw - s / 2;
-      var y = cy + offs[k][1] * cw - s / 2 - 4;
+      var x = c.x + offs[k][0] * cw - s / 2;
+      var y = c.y + offs[k][1] * cw - s / 2 - 4;
       el.style.transform = 'translate(' + x + 'px,' + y + 'px)';
       el.classList.toggle('turn', S.phase === 'playing' && +S.turn === pi && !animating);
     });
@@ -469,7 +762,7 @@ async function showEvents(events){
     if (ev.swap){
       POS[ev.swap[0]] = ev.aPos;
       POS[ev.swap[1]] = ev.bPos;
-      placeTokens(false);
+      placeTokens();
       await wait(500);
     }
     $('lastev').textContent = ev.icon + ' ' + ev.text;
@@ -478,7 +771,29 @@ async function showEvents(events){
   ov.classList.remove('on');
 }
 
+function showChoiceModal(choice){
+  var card = $('choiceCard');
+  var html = '<div class="cic">🪧</div><div class="ctx">' + esc(choice.text) + '</div>';
+  choice.options.forEach(function(op){
+    html += '<button class="choice-btn" data-to="' + op.to + '">' +
+      '<div class="cl">' + esc(op.label) + '</div>' +
+      '<div class="ch">' + esc(op.hint) + '</div></button>';
+  });
+  card.innerHTML = html;
+  $('choiceOverlay').classList.add('on');
+  Array.prototype.forEach.call(card.querySelectorAll('.choice-btn'), function(b){
+    b.onclick = function(){
+      socket.emit('choice', { to: +b.getAttribute('data-to') });
+      hideChoiceModal();
+      $('status').textContent = '🐾 Off you go...';
+    };
+  });
+}
+function hideChoiceModal(){ $('choiceOverlay').classList.remove('on'); }
+
 async function animateTurn(pl){
+  hideChoiceModal();
+  CHOICE = null;
   S = pl.state; YOU = pl.you;
   if (POS.length !== S.players.length){ syncLive(); }
   renderGameStatic(pl.playerIdx);
@@ -488,21 +803,30 @@ async function animateTurn(pl){
     await showEvents(pl.events);
     return;
   }
-  $('status').textContent = '🎲 ' + name + ' rolled...';
-  await diceRollAnim(pl.dice);
-  $('status').textContent = '🎲 ' + name + ' rolled a ' + pl.dice + '!';
+  if (!pl.cont && pl.dice){
+    $('status').textContent = '🎲 ' + name + ' rolled...';
+    await diceRollAnim(pl.dice);
+    $('status').textContent = '🎲 ' + name + ' rolled a ' + pl.dice + '!';
+  }
   for (var s = 0; s < pl.steps.length; s++){
     var st = pl.steps[s];
-    var dir = st.to > st.from ? 1 : -1;
-    for (var t = st.from + dir; ; t += dir){
-      POS[st.pIdx] = t;
-      placeTokens(true);
+    for (var t = 0; t < st.path.length; t++){
+      POS[st.pIdx] = st.path[t];
+      placeTokens();
       hopToken(st.pIdx);
       await wait(265);
-      if (t === st.to) break;
     }
   }
   await showEvents(pl.events);
+  if (pl.choice){
+    CHOICE = pl.choice;
+    if (pl.choice.pIdx === YOU){
+      $('status').textContent = '🪧 Choose a path!';
+      showChoiceModal(pl.choice);
+    } else {
+      $('status').textContent = '🪧 ' + name + ' is choosing a path...';
+    }
+  }
 }
 
 function syncLive(){
@@ -513,45 +837,12 @@ function syncLive(){
 function apply(payload){
   S = payload.state; YOU = payload.you;
   syncLive();
-  render();
-}
-
-function render(){
-  if (!S) return;
-  $('overOverlay').classList.remove('on');
-  if (S.phase === 'lobby'){
-    if (YOU >= 0) renderLobby(); else renderJoin();
-    return;
-  }
-  renderGameStatic(S.turn);
-  renderDock();
-  if (S.phase === 'over') renderOver();
-}
-
-function renderJoin(){
-  show('scr-join');
-  var g = $('catGrid');
-  g.innerHTML = '';
-  var full = S.players.length >= 4;
-  Object.keys(CAT_INFO).forEach(function(key){
-    var taken = S.players.some(function(p){ return p.cat === key; });
-    var d = document.createElement('div');
-    d.className = 'cat-card' + (taken ? ' taken' : '') + (selCat === key ? ' sel' : '');
-    d.innerHTML = catSVG(key) + '<div class="cname">' + CAT_INFO[key].label + '</div>' +
-      '<div class="tag">' + (taken ? 'Taken' : '') + '</div>';
-    if (!taken){
-      d.onclick = function(){ selCat = key; renderJoin(); };
-    }
-    g.appendChild(d);
-  });
-  $('joinBtn').disabled = full;
-  $('joinNote').textContent = full
-    ? 'The lobby is full (4 Kedi). Watch for the next round!'
-    : '2–4 players · playing alone? a bot Kedi joins you 🤖';
+  route();
 }
 
 function renderLobby(){
   show('scr-lobby');
+  $('overOverlay').classList.remove('on');
   var list = $('lobbyList');
   list.innerHTML = '';
   S.players.forEach(function(p, i){
@@ -574,10 +865,11 @@ function renderLobby(){
 
 function renderGameStatic(turnIdx){
   show('scr-game');
-  if (!window._cells) buildBoard();
+  $('watchBack').style.display = (YOU < 0) ? '' : 'none';
+  if (!cellEls.length) buildBoard();
   ensureTokens();
   renderChips(turnIdx);
-  placeTokens(false);
+  placeTokens();
 }
 
 function renderChips(turnIdx){
@@ -601,7 +893,7 @@ function renderDock(){
   var meIn = YOU >= 0;
   var rb = $('rollbtn');
   if (!meIn){
-    $('status').textContent = "👀 You're watching this round — join the next one!";
+    $('status').textContent = "👀 You're watching this round!";
     rb.style.display = 'none';
     return;
   }
@@ -611,6 +903,12 @@ function renderDock(){
   if (S.phase === 'over'){
     $('status').textContent = '🎉 Game over!';
     rb.disabled = true;
+    return;
+  }
+  if (CHOICE){
+    rb.disabled = true;
+    if (CHOICE.pIdx === YOU){ $('status').textContent = '🪧 Choose a path!'; }
+    else { $('status').textContent = '🪧 ' + turnP.name + ' is choosing a path...'; }
     return;
   }
   if (me.finished){
@@ -640,30 +938,240 @@ function renderOver(){
     '<h2>' + esc(winner.name) + ' wins!</h2>' +
     '<div class="wsub">The snack champion of the neighborhood 🍪</div>' +
     rows +
-    '<button class="btn" id="againBtn" style="margin-top:8px;">Play again</button>';
+    (YOU >= 0 ? '<button class="btn" id="againBtn" style="margin-top:8px;">Play again</button>'
+      : '<button class="btn ghost" id="overBackBtn" style="margin-top:8px;">Back to games</button>');
   ov.classList.add('on');
-  $('againBtn').onclick = function(){ socket.emit('again'); };
+  if (YOU >= 0) $('againBtn').onclick = function(){ socket.emit('again'); };
+  else $('overBackBtn').onclick = function(){ WATCH = null; ov.classList.remove('on'); route(); };
 }
 
-$('joinBtn').onclick = function(){
+function renderPPLobby(){
+  show('scr-pplobby');
+  $('overOverlay').classList.remove('on');
+  var list = $('ppLobbyList');
+  list.innerHTML = '';
+  PS.players.forEach(function(p, i){
+    var d = document.createElement('div');
+    d.className = 'prow';
+    d.innerHTML = catSVG(p.cat) + '<span class="pn">' + esc(p.name) + '</span>' +
+      (i === PYOU ? '<span class="pill me">you</span>' : '') +
+      (p.isBot ? '<span class="pill">bot</span>' : '');
+    list.appendChild(d);
+  });
+  for (var k = PS.players.length; k < 2; k++){
+    var e = document.createElement('div');
+    e.className = 'prow';
+    e.style.opacity = '.5';
+    e.innerHTML = '<span style="width:34px;text-align:center;font-size:20px;">💭</span><span class="pn" style="color:var(--ink-soft)">Waiting for a rival...</span>';
+    list.appendChild(e);
+  }
+  $('ppStartBtn').textContent = PS.players.length === 1 ? 'Start vs a bot 🤖' : 'Start duel!';
+}
+
+function ppSlots(){
+  var ptr = PS.pointer;
+  return [ptr, 1 - ptr];
+}
+
+function renderPPGame(){
+  show('scr-ppgame');
+  $('ppWatchBack').style.display = (PYOU < 0) ? '' : 'none';
+  var sc = $('ppscore');
+  if (PS.players.length === 2){
+    var pipsFor = function(n){
+      var h = '<span class="pips">';
+      for (var i = 0; i < 5; i++) h += '<span class="' + (i < n ? 'on' : '') + '"></span>';
+      return h + '</span>';
+    };
+    sc.innerHTML = catSVG(PS.players[0].cat) + pipsFor(PS.scores[0]) +
+      '<span class="sc">' + PS.scores[0] + ' : ' + PS.scores[1] + '</span>' +
+      pipsFor(PS.scores[1]) + catSVG(PS.players[1].cat);
+  }
+  var slots = ppSlots();
+  fillSlot($('slotL'), slots[0], true);
+  fillSlot($('slotR'), slots[1], false);
+  if (!ppRoundOn){
+    setPPButtons(false);
+    if (PS.phase === 'playing') $('ppstatus').textContent = 'Get ready...';
+    else if (PS.phase === 'over') $('ppstatus').textContent = '🎉 Duel over!';
+  }
+}
+
+function fillSlot(el, pi, isPointer){
+  var p = PS.players[pi];
+  if (!p){ el.innerHTML = ''; return; }
+  el.innerHTML = '<div class="face-wrap" id="face' + pi + '">' + catSVG(p.cat) +
+    (isPointer ? '<div class="pawicon" id="pawic" style="left:26px;">' + pawSVG() + '</div>' : '') +
+    '</div>' +
+    '<div><span class="role">' + (isPointer ? '🐾 Paw' : '🙀 Dodge') + '</span></div>' +
+    '<div class="pname">' + esc(p.name) + (pi === PYOU ? ' (you)' : '') + (p.isBot ? ' 🤖' : '') + '</div>';
+}
+
+function setPPButtons(enabled){
+  Array.prototype.forEach.call(document.querySelectorAll('.paw-btn'), function(b){
+    b.disabled = !enabled;
+    b.classList.remove('picked');
+  });
+}
+
+function ppCenter(html){
+  $('ppcenter').innerHTML = html;
+}
+
+function ppBar(ms){
+  var bar = $('ppbarin');
+  bar.style.transition = 'none';
+  bar.style.width = '100%';
+  void bar.offsetWidth;
+  bar.style.transition = 'width ' + ms + 'ms linear';
+  bar.style.width = '0%';
+}
+
+async function onPPRound(payload){
+  PS = payload.state; PYOU = payload.you;
+  ppPicked = false;
+  ppRoundOn = true;
+  renderPPGame();
+  ppCenter('');
+  $('face0') && ($('face0').className = 'face-wrap');
+  $('face1') && ($('face1').className = 'face-wrap');
+  var meIn = PYOU >= 0;
+  $('ppstatus').textContent = 'Round ' + payload.round + ' — eyes up!';
+  var counts = ['3','2','1'];
+  for (var i = 0; i < counts.length; i++){
+    ppCenter('<div class="big">' + counts[i] + '</div>');
+    await wait(700);
+  }
+  ppCenter('<div class="big">PAW!</div>');
+  await wait(350);
+  ppCenter('');
+  if (!ppRoundOn) return;
+  if (meIn && !ppPicked){
+    setPPButtons(true);
+    var myRole = (PS.pointer === PYOU) ? '🐾 You point — guess their dodge!' : '🙀 You dodge — pick a direction!';
+    $('ppstatus').textContent = myRole;
+    ppBar(2600);
+  } else {
+    $('ppstatus').textContent = meIn ? 'Picked! Waiting...' : '👀 Watching the duel...';
+  }
+}
+
+async function onPPResult(payload){
+  ppRoundOn = false;
+  setPPButtons(false);
+  $('ppbarin').style.transition = 'none';
+  $('ppbarin').style.width = '0%';
+  var ptr = payload.pointer, dodger = 1 - ptr;
+  var dirCls = ['dirL','dirC','dirR'];
+  var f0 = $('face' + dodger);
+  if (f0) f0.className = 'face-wrap ' + dirCls[payload.picks[dodger]];
+  var f1 = $('face' + ptr);
+  if (f1) f1.className = 'face-wrap ' + dirCls[payload.picks[ptr]];
+  var pawic = $('pawic');
+  if (pawic){
+    var lefts = ['-14px','26px','66px'];
+    pawic.style.left = lefts[payload.picks[ptr]];
+  }
+  await wait(650);
+  ppCenter('<div class="banner">' + (payload.match ? '🎯 HIT! +1' : '💨 MISS!') + '</div>');
+  PS = payload.state; PYOU = payload.you;
+  renderPPGameScoreOnly();
+  await wait(1600);
+  ppCenter('');
+  if (payload.over){
+    PS = payload.state;
+    renderPPGame();
+    renderPPOver();
+  } else {
+    $('ppstatus').textContent = '🔄 Switching sides...';
+  }
+}
+
+function renderPPGameScoreOnly(){
+  var sc = $('ppscore');
+  if (PS.players.length === 2){
+    var pipsFor = function(n){
+      var h = '<span class="pips">';
+      for (var i = 0; i < 5; i++) h += '<span class="' + (i < n ? 'on' : '') + '"></span>';
+      return h + '</span>';
+    };
+    sc.innerHTML = catSVG(PS.players[0].cat) + pipsFor(PS.scores[0]) +
+      '<span class="sc">' + PS.scores[0] + ' : ' + PS.scores[1] + '</span>' +
+      pipsFor(PS.scores[1]) + catSVG(PS.players[1].cat);
+  }
+}
+
+function renderPPOver(){
+  var ov = $('overOverlay'), card = $('overCard');
+  var w = PS.winner, l = 1 - w;
+  card.innerHTML = '<div style="font-size:42px;">🏆</div>' +
+    '<h2>' + esc(PS.players[w].name) + ' wins!</h2>' +
+    '<div class="wsub">Paw Paw Paw champion · ' + PS.scores[w] + ' : ' + PS.scores[l] + '</div>' +
+    '<div class="rrow first"><span class="medal">🥇</span>' + catSVG(PS.players[w].cat) +
+    '<span class="rn">' + esc(PS.players[w].name) + (w === PYOU ? ' (you)' : '') + (PS.players[w].isBot ? ' 🤖' : '') + '</span>' +
+    '<span class="rs">' + PS.scores[w] + '</span></div>' +
+    '<div class="rrow"><span class="medal">🥈</span>' + catSVG(PS.players[l].cat) +
+    '<span class="rn">' + esc(PS.players[l].name) + (l === PYOU ? ' (you)' : '') + (PS.players[l].isBot ? ' 🤖' : '') + '</span>' +
+    '<span class="rs">' + PS.scores[l] + '</span></div>' +
+    (PYOU >= 0 ? '<button class="btn" id="ppAgainBtn" style="margin-top:8px;">Play again</button>'
+      : '<button class="btn ghost" id="ppOverBackBtn" style="margin-top:8px;">Back to games</button>');
+  ov.classList.add('on');
+  if (PYOU >= 0) $('ppAgainBtn').onclick = function(){ socket.emit('pp_again'); };
+  else $('ppOverBackBtn').onclick = function(){ WATCH = null; ov.classList.remove('on'); route(); };
+}
+
+$('charBtn').onclick = function(){
   if (!selCat) return toast('Pick a Kedi first! 🐱');
   var name = $('nameInput').value.trim();
   if (!name) return toast('Give your Kedi a name!');
-  socket.emit('join', { name: name, cat: selCat });
+  localStorage.setItem('kedi_name', name);
+  localStorage.setItem('kedi_cat', selCat);
+  route();
 };
+$('cardKedi').onclick = function(){
+  var id = ident();
+  if (!id) return renderChar();
+  if (S && S.phase !== 'lobby'){ WATCH = 'kedi'; route(); return; }
+  socket.emit('join', { name: id.name, cat: id.cat });
+};
+$('cardPaw').onclick = function(){
+  var id = ident();
+  if (!id) return renderChar();
+  if (PS && PS.phase !== 'lobby'){ WATCH = 'paw'; route(); return; }
+  socket.emit('pp_join', { name: id.name, cat: id.cat });
+};
+$('kediBack').onclick = function(){ socket.emit('leave'); YOU = -1; route(); };
+$('pawBack').onclick = function(){ socket.emit('pp_leave'); PYOU = -1; route(); };
+$('watchBack').onclick = function(){ WATCH = null; route(); };
+$('ppWatchBack').onclick = function(){ WATCH = null; route(); };
 $('startBtn').onclick = function(){ socket.emit('start'); };
+$('ppStartBtn').onclick = function(){ socket.emit('pp_start'); };
 $('rollbtn').onclick = function(){
   $('rollbtn').disabled = true;
   socket.emit('roll');
 };
-$('copyBtn').onclick = function(){
+Array.prototype.forEach.call(document.querySelectorAll('.paw-btn'), function(b){
+  b.onclick = function(){
+    if (PYOU < 0 || ppPicked) return;
+    ppPicked = true;
+    socket.emit('pp_pick', { dir: +b.getAttribute('data-dir') });
+    setPPButtons(false);
+    b.disabled = false;
+    b.classList.add('picked');
+    b.disabled = true;
+    $('ppstatus').textContent = 'Picked! Waiting for the reveal... 🤫';
+  };
+});
+function copyLink(){
   var url = location.href;
   if (navigator.clipboard && navigator.clipboard.writeText){
     navigator.clipboard.writeText(url).then(function(){ toast('Link copied! Send it to your friends 💌'); });
   } else {
     toast(url);
   }
-};
+}
+$('copyBtn').onclick = copyLink;
+$('ppCopyBtn').onclick = copyLink;
 
 socket.on('connect', function(){
   socket.emit('hello', { pid: localStorage.getItem('catlife_pid') });
@@ -671,16 +1179,26 @@ socket.on('connect', function(){
 socket.on('joined', function(d){
   localStorage.setItem('catlife_pid', d.pid);
 });
-socket.on('errmsg', toast);
+socket.on('errmsg', function(m){
+  toast(m);
+  if (String(m).indexOf('taken in this game') >= 0) renderChar();
+});
+socket.on('online', function(d){
+  $('online').textContent = '👥 ' + d.n;
+});
 socket.on('board', function(b){
   BOARDC = b;
-  window._cells = null;
+  cellEls = [];
 });
 socket.on('state', function(payload){
   if (animating){ pending = payload; return; }
   apply(payload);
 });
 socket.on('turn', function(payload){
+  if (payload.you < 0 && WATCH !== 'kedi'){
+    S = payload.state; YOU = payload.you;
+    return;
+  }
   (async function(){
     animating = true;
     try { await animateTurn(payload); } catch(e){ console.error(e); }
@@ -689,8 +1207,22 @@ socket.on('turn', function(payload){
     pending = null;
   })();
 });
+socket.on('pp_state', function(payload){
+  PS = payload.state; PYOU = payload.you;
+  if (!ppRoundOn && !animating) route();
+});
+socket.on('pp_round', function(payload){
+  if (payload.you < 0 && WATCH !== 'paw'){ PS = payload.state; PYOU = payload.you; return; }
+  onPPRound(payload);
+});
+socket.on('pp_result', function(payload){
+  if (payload.you < 0 && WATCH !== 'paw'){ PS = payload.state; PYOU = payload.you; return; }
+  onPPResult(payload);
+});
 
-window.addEventListener('resize', function(){ placeTokens(false); });
+window.addEventListener('resize', function(){
+  if (cellEls.length && $('scr-game').classList.contains('on')){ buildBoard(); placeTokens(); }
+});
 diceFace(6);
 </script>
 </body>
