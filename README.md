@@ -3,8 +3,9 @@
 친구들과 하는 고양이 미니게임 모음. 링크를 열고, 고양이를 고르고, 게임을 선택하면 끝!
 
 **게임**
-- **Kedi Life** 🎲 — 2~4인 보드 레이스. 주사위를 굴려 갈림길(🪧)에서 길을 고르고, 간식을 가장 많이 모아 집에 도착하면 우승. 혼자면 봇이 참가해요.
-- **Paw Paw Paw!** 🐾 — 1대1 순발력 대결. 3·2·1 카운트 후 좌/중/우를 동시에 선택. 방향이 겹치면 발바닥 쪽 득점, 5점 선취 승. 혼자면 봇과 대결.
+- **Kedi Life** 🎲 — 2~4인 보드 레이스. 맵 3종(공원/골목길/놀이터)에서 주사위를 굴려 갈림길(🪧)을 고르고, 간식을 가장 많이 모아 집에 도착하면 우승. 혼자면 봇이 참가해요.
+- **Paw Paw Paw!** 🐾 — 1대1 순발력 대결. 3·2·1 카운트 후 좌/중/우를 동시에 선택. 방향이 겹치면 발바닥 쪽 득점, 3점 선취 승. 혼자면 봇과 대결.
+- **Kedi Running** 🏃 — 2~4인 달리기. 좌/우를 번갈아 빠르게 연타(PC는 방향키)! 📣 응원, 🍪 간식 유혹, 💧 물 뿌리기, 그리고 갑자기 내리는 비 🌧️까지.
 
 **기능**: 우측 상단 접속자 수 표시 · `/log?key=...` 비공개 게임 기록 (LOG_KEY 환경변수 필요)
 
@@ -16,7 +17,8 @@ Cozy cat mini-games to play with friends. Open the link, pick your Kedi, choose 
 
 **Games**
 - **Kedi Life** 🎲 — A board race for 2–4 players. Roll the dice, choose your path at signposts (🪧), collect the most snacks, and get home. A bot Kedi joins if you play alone.
-- **Paw Paw Paw!** 🐾 — A 1 vs 1 reflex duel. On "3·2·1, Paw!" both players pick left / center / right at the same time. Matching directions scores a point for the paw — first to 5 wins. Playing solo? You duel a bot.
+- **Paw Paw Paw!** 🐾 — A 1 vs 1 reflex duel. On "3·2·1, Paw!" both players pick left / center / right at the same time. Matching directions scores a point for the paw — first to 3 wins. Playing solo? You duel a bot.
+- **Kedi Running** 🏃 — A sprint race for 2–4. Tap left·right fast (arrow keys on PC), cheer yourself, tempt rivals with snacks, splash water — and take cover when it rains!
 
 **Features**: live player counter (top right) · private game log at `/log?key=...` (requires the LOG_KEY env variable)
 

@@ -15,7 +15,7 @@ const SPEED = process.env.FAST ? 0.04 : 1;
 const FINISH_BONUS = [15, 10, 5, 0];
 const CAT_KEYS = ['tuxedo', 'orange', 'white', 'calico', 'gray', 'siamese'];
 const BOT_NAMES = ['Mochi', 'Coco', 'Nabi', 'Tora'];
-const PAW_WIN = 5;
+const PAW_WIN = 3;
 
 const LOG = [];
 function glog(s) {
@@ -73,7 +73,7 @@ const M1 = add(3, 2, { t: 'swap', text: 'Swap places with another Kedi!', icon: 
 const m1 = add(3, 3, { t: 'nap', text: 'So sleepy... skip 1 turn', icon: '💤' });
 const m2 = add(2, 3, { t: 'gain', v: 8, text: "Grandma's snacks! +8", icon: '👵' });
 const m3 = add(1, 3, { t: 'lose', v: 5, text: 'Vet visit... -5 snacks', icon: '💉' });
-const m4 = add(0, 3, { t: 'chance', text: 'Mystery box...', icon: '❓' });
+const m4 = add(0, 3, { t: 'swap', text: 'Swap places with another Kedi!', icon: '🔀' });
 const m5 = add(0, 4, { t: 'move', v: 2, text: 'Zoomies! Run 2 more', icon: '💨' });
 const m6 = add(1, 4, { t: 'gain', v: 6, text: 'Fresh shrimp! +6 snacks', icon: '🦐' });
 const F2 = add(2, 4, { t: 'fork', text: 'Choose your way home!', icon: '🪧' });
@@ -83,8 +83,8 @@ const k3 = add(4, 5, { t: 'lose', v: 4, text: 'Knocked over a vase! -4', icon: '
 const k4 = add(4, 6, { t: 'gain', v: 6, text: 'A bowl of milk! +6 snacks', icon: '🥛' });
 const r1 = add(2, 5, { t: 'lose', v: 5, text: 'Rainy rooftop... -5 snacks', icon: '🌧️' });
 const r2 = add(2, 6, { t: 'gain', v: 2, text: 'A rooftop breeze! +2 snacks', icon: '🍃' });
-const M2 = add(3, 6, { t: 'chance', text: 'Mystery box...', icon: '❓' });
-const e1 = add(3, 7, { t: 'swap', text: 'Swap places with another Kedi!', icon: '🔀' });
+const M2 = add(3, 6, { t: 'gain', v: 5, text: 'Fresh mackerel! +5 snacks', icon: '🐟' });
+const e1 = add(3, 7, { t: 'gain', v: 4, text: 'Belly rubs! +4 snacks', icon: '🐾' });
 const e2 = add(2, 7, { t: 'move', v: -2, text: 'A loud noise! Go back 2', icon: '😾' });
 const e3 = add(1, 7, { t: 'gain', v: 5, text: 'Treat time! +5 snacks', icon: '🍪' });
 const e4 = add(0, 7, { t: 'chance', text: 'Mystery box...', icon: '❓' });
@@ -112,18 +112,82 @@ N.forEach(nd => { nd.back = null; });
 N.forEach(nd => { nd.next.forEach(nx => { if (N[nx].back == null) N[nx].back = nd.id; }); });
 
 const CHANCE = [
-  { t: 'gain', v: 12, text: 'Jackpot! +12 snacks', icon: '🎁' },
+  { t: 'gain', v: 10, text: 'Jackpot! +10 snacks', icon: '🎁' },
   { t: 'gain', v: 5, text: 'A kind stranger! +5 snacks', icon: '🫶' },
-  { t: 'lose', v: 6, text: 'Seagull attack! -6 snacks', icon: '🐦' },
+  { t: 'lose', v: 5, text: 'Seagull attack! -5 snacks', icon: '🐦' },
   { t: 'move', v: 2, text: 'A friendly wind! Move 2 more', icon: '🍃' },
-  { t: 'move', v: -3, text: 'Wrong way! Go back 3', icon: '🙀' },
+  { t: 'move', v: -2, text: 'Wrong way! Go back 2', icon: '🙀' },
   { t: 'nap', text: 'Sudden nap attack... skip 1 turn', icon: '💤' }
 ];
 
+const MAPS = {
+  park: { name: 'Sunny Park', icon: '🌳', tiles: {}, forks: {} },
+  alley: { name: 'Night Alley', icon: '🌙', tiles: {
+    1: { text: 'Chicken skewer! +5 snacks', icon: '🍗' },
+    2: { text: 'Caught a mouse! +7 snacks', icon: '🐭' },
+    4: { text: 'Leftover treats! +3 snacks', icon: '🥡' },
+    5: { text: 'A friendly stray! +4 snacks', icon: '🐾' },
+    6: { text: 'A milk crate! +3 snacks', icon: '🥛' },
+    7: { text: 'A moth friend! +2 snacks', icon: '🦋' },
+    8: { text: 'A warm barrel! +3 snacks', icon: '🛢️' },
+    9: { text: 'A tough cat took your snacks! -7', icon: '😼' },
+    13: { text: 'A cozy box... skip 1 turn', icon: '📦' },
+    14: { text: 'Noodle shop scraps! +8 snacks', icon: '🍜' },
+    15: { text: 'Chased by the janitor! -5', icon: '🧹' },
+    17: { text: 'Zoomies down the alley! Run 2 more', icon: '💨' },
+    20: { text: 'Night market! +8 snacks', icon: '🏮' },
+    21: { text: 'A kind cook! +7 snacks', icon: '🫶' },
+    22: { text: 'Knocked over a trash can! -4', icon: '🚮' },
+    28: { text: 'A siren! Go back 2', icon: '🚨' }
+  }, forks: {
+    3: [{ label: '🏮 Lantern lane', hint: 'Warm lights, steady snacks' }, { label: '🕳️ Dark shortcut', hint: 'Risky — tough cat or tuna!' }],
+    19: [{ label: '🏮 Night market', hint: 'Snack festival, the long way' }, { label: '🌧️ Rooftop shortcut', hint: 'Fast but a little wet' }]
+  } },
+  playground: { name: 'Playground', icon: '🛝', tiles: {
+    1: { text: 'A pretzel bite! +5 snacks', icon: '🥨' },
+    2: { text: 'Caught a cricket! +7 snacks', icon: '🦗' },
+    4: { text: 'Juice drops! +3 snacks', icon: '🧃' },
+    6: { text: 'Dropped ice cream! +3 snacks', icon: '🍦' },
+    8: { text: 'A sunny bench! +3 snacks', icon: '☀️' },
+    9: { text: 'A puppy chased you! -7', icon: '🐕' },
+    10: { text: 'Picnic chicken! +10 snacks', icon: '🍗' },
+    13: { text: 'Nap under the slide... skip 1 turn', icon: '💤' },
+    14: { text: 'A picnic basket! +8 snacks', icon: '🧺' },
+    15: { text: 'Sprinkler splash! -5 snacks', icon: '💦' },
+    17: { text: 'Skateboard zoom! Run 2 more', icon: '🛹' },
+    20: { text: 'A food truck! +8 snacks', icon: '🚚' },
+    22: { text: 'Hit by a ball! -4', icon: '⚽' },
+    24: { text: 'Sprinkler zone! -5 snacks', icon: '💦' },
+    26: { text: 'A snack stand! +5 snacks', icon: '🍡' },
+    28: { text: 'A balloon popped! Go back 2', icon: '🎈' }
+  }, forks: {
+    3: [{ label: '🏖️ Sandbox path', hint: 'Soft and snacky, a bit longer' }, { label: '🛝 Slide shortcut', hint: 'Risky — puppy or picnic!' }],
+    19: [{ label: '🚚 Food-truck row', hint: 'Snack festival, the long way' }, { label: '💦 Sprinkler shortcut', hint: 'Fast but wet' }]
+  } }
+};
+
+function themedBoard(key) {
+  const m = MAPS[key] || MAPS.park;
+  return N.map(nd => {
+    const base = {
+      id: nd.id, x: nd.x, y: nd.y, t: nd.t, v: nd.v, text: nd.text,
+      icon: nd.icon, label: nd.label, next: nd.next, back: nd.back, choices: nd.choices
+    };
+    if (m.tiles[nd.id]) Object.assign(base, m.tiles[nd.id]);
+    if (nd.choices && m.forks[nd.id]) {
+      base.choices = nd.choices.map((c, i) => ({
+        to: c.to, label: m.forks[nd.id][i].label, hint: m.forks[nd.id][i].hint
+      }));
+    }
+    return base;
+  });
+}
+
 let game = freshGame();
+let B = themedBoard('park');
 
 function freshGame() {
-  return { phase: 'lobby', players: [], turn: 0, finishCount: 0, busy: false, timer: null, await: null };
+  return { phase: 'lobby', players: [], turn: 0, finishCount: 0, busy: false, timer: null, await: null, map: 'park' };
 }
 function rid() { return crypto.randomBytes(8).toString('hex'); }
 function clearTimer() { if (game.timer) { clearTimeout(game.timer); game.timer = null; } }
@@ -133,6 +197,7 @@ function kediByPid(pid) { return game.players.find(p => p.id === pid); }
 function pub() {
   return {
     phase: game.phase,
+    map: game.map,
     turn: game.turn,
     players: game.players.map(p => ({
       name: p.name, cat: p.cat, isBot: p.isBot, connected: p.connected,
@@ -219,7 +284,7 @@ function applyEffect(pIdx, eff, events, paths, depth) {
 function landOn(pIdx, events, paths, depth) {
   if (depth > 4) return;
   const p = game.players[pIdx];
-  const tile = N[p.pos];
+  const tile = B[p.pos];
   if (tile.t === 'home') {
     if (!p.finished) {
       p.finished = true;
@@ -240,7 +305,7 @@ function walk(pIdx, steps) {
   const path = [];
   let remaining = steps;
   while (remaining > 0) {
-    const node = N[p.pos];
+    const node = B[p.pos];
     if (!node.next.length) break;
     if (node.next.length > 1) {
       return { path, remaining, fork: node.id };
@@ -254,7 +319,7 @@ function walk(pIdx, steps) {
 }
 
 function segMs(pathLen, evCount, withDice) {
-  return ((withDice ? 1000 : 300) + pathLen * 260 + evCount * 1750 + 500) * SPEED;
+  return ((withDice ? 1000 : 300) + pathLen * 260 + evCount * 2850 + 500) * SPEED;
 }
 
 function finishSegment(pIdx, dice, cont, walked) {
@@ -280,7 +345,7 @@ function finishSegment(pIdx, dice, cont, walked) {
 }
 
 function forkSegment(pIdx, dice, cont, walked) {
-  const node = N[walked.fork];
+  const node = B[walked.fork];
   const animMs = segMs(walked.path.length, 0, !cont);
   game.await = { pIdx, remaining: walked.remaining, forkId: node.id, options: node.choices.map(c => c.to) };
   emitAll('turn', {
@@ -305,7 +370,7 @@ function resumeWalk(pIdx, to) {
   game.await = null;
   clearTimer();
   const p = game.players[pIdx];
-  const chosen = N[aw.forkId].choices.find(c => c.to === to);
+  const chosen = B[aw.forkId].choices.find(c => c.to === to);
   if (chosen) glog('🪧 Kedi Life · ' + p.name + ' chose ' + chosen.label);
   p.pos = to;
   const walked = walk(pIdx, aw.remaining - 1);
@@ -462,9 +527,123 @@ function pawResolve() {
   paw.timer = setTimeout(pawStartRound, 2800 * (SPEED === 1 ? 1 : 0.15));
 }
 
+const RUN_LEN = 100;
+let run = freshRun();
+function freshRun() {
+  return { phase: 'lobby', players: [], timer: null, rainUntil: 0, nextRain: 0, finishCount: 0, startAt: 0, fxSeq: 0, fx: [] };
+}
+function runByPid(pid) { return run.players.find(p => p.id === pid); }
+function youOfRun(s) { return run.players.findIndex(p => p.id === s.data.pid); }
+function addRunFx(type, a, b) {
+  run.fxSeq += 1;
+  run.fx.push({ seq: run.fxSeq, type, a, b });
+  if (run.fx.length > 8) run.fx.shift();
+}
+function runRanking() {
+  return run.players.map((p, i) => i).sort((x, y) =>
+    (run.players[x].finishOrder || 99) - (run.players[y].finishOrder || 99) ||
+    run.players[y].pos - run.players[x].pos);
+}
+const RUN_CD = { cheer: 5000, snack: 8000, water: 9000 };
+function runPub() {
+  const now = Date.now();
+  return {
+    phase: run.phase,
+    rain: now < run.rainUntil,
+    fx: run.fx,
+    players: run.players.map(p => ({
+      name: p.name, cat: p.cat, isBot: p.isBot, connected: p.connected,
+      pos: Math.round(p.pos * 10) / 10, finished: p.finished, finishOrder: p.finishOrder,
+      slowed: now < p.slowUntil, boosted: now < p.boostUntil,
+      cds: {
+        cheer: Math.max(0, RUN_CD.cheer - (now - (p.cdCheer || 0))),
+        snack: Math.max(0, RUN_CD.snack - (now - (p.cdSnack || 0))),
+        water: Math.max(0, RUN_CD.water - (now - (p.cdWater || 0)))
+      }
+    })),
+    ranking: run.phase === 'over' ? runRanking() : null
+  };
+}
+function emitAllRun(type, payload) {
+  for (const [, s] of io.sockets.sockets) {
+    s.emit(type, Object.assign({}, payload, { state: runPub(), you: youOfRun(s) }));
+  }
+}
+function runBroadcast() { emitAllRun('run_state', {}); }
+function addRunBot() {
+  const catFree = CAT_KEYS.find(c => !run.players.some(p => p.cat === c));
+  const used = run.players.map(p => p.name);
+  const name = BOT_NAMES.find(n => !used.includes(n)) || 'Bot';
+  run.players.push({ id: rid(), name, cat: catFree, isBot: true, connected: true, pos: 0, energy: 0, slowUntil: 0, boostUntil: 0, finished: false, finishOrder: 0, cdCheer: 0, cdSnack: 0, cdWater: 0 });
+}
+function runUseItem(i, kind) {
+  const p = run.players[i];
+  const now = Date.now();
+  if (kind === 'cheer') {
+    if (now - (p.cdCheer || 0) < RUN_CD.cheer) return;
+    p.cdCheer = now;
+    p.boostUntil = now + 1800;
+    addRunFx('cheer', i);
+  } else if (kind === 'snack') {
+    if (now - (p.cdSnack || 0) < RUN_CD.snack) return;
+    p.cdSnack = now;
+    run.players.forEach((q, j) => { if (j !== i && !q.finished) q.slowUntil = now + 1700; });
+    addRunFx('snack', i);
+    glog('🍪 Kedi Running · ' + p.name + ' tempted everyone with snacks!');
+  } else if (kind === 'water') {
+    if (now - (p.cdWater || 0) < RUN_CD.water) return;
+    p.cdWater = now;
+    run.players.forEach((q, j) => {
+      if (j === i || q.finished) return;
+      if (Math.random() < 0.5) { q.pos = Math.max(0, q.pos - 6); addRunFx('slipb', j); }
+      else { q.pos = Math.min(RUN_LEN - 1, q.pos + 5); addRunFx('slipf', j); }
+    });
+    glog('💧 Kedi Running · ' + p.name + ' splashed water!');
+  }
+}
+function runTick() {
+  if (run.phase !== 'playing') return;
+  const now = Date.now();
+  if (run.nextRain && now >= run.nextRain) {
+    run.rainUntil = now + 2800;
+    run.nextRain = now + 12000 + Math.random() * 10000;
+    addRunFx('rain');
+    glog('🌧️ Kedi Running · 비가 온다! 전원 대피');
+  }
+  const raining = now < run.rainUntil;
+  run.players.forEach((p, i) => {
+    if (p.finished) return;
+    if (p.isBot && !raining) {
+      if (Math.random() < 0.6) p.energy = Math.min(6, (p.energy || 0) + 0.9);
+      if (Math.random() < 0.004) runUseItem(i, ['cheer', 'snack', 'water'][Math.floor(Math.random() * 3)]);
+    }
+    if (!raining) {
+      let mv = 0.12 + (p.energy || 0) * 0.14;
+      if (now < p.boostUntil) mv *= 1.6;
+      if (now < p.slowUntil) mv *= 0.45;
+      p.pos += mv;
+      p.energy = (p.energy || 0) * 0.86;
+      if (p.pos >= RUN_LEN) {
+        p.pos = RUN_LEN;
+        p.finished = true;
+        run.finishCount += 1;
+        p.finishOrder = run.finishCount;
+        addRunFx('finish', i);
+        glog('🏁 Kedi Running · ' + p.name + ' finished #' + p.finishOrder);
+      }
+    }
+  });
+  if (run.players.every(p => p.finished) || now - run.startAt > 150000) {
+    run.phase = 'over';
+    if (run.timer) { clearInterval(run.timer); run.timer = null; }
+    glog('🏆 Kedi Running 종료! ' + runRanking().map((pi, r) => (r + 1) + '위 ' + run.players[pi].name).join(' · '));
+  }
+  runBroadcast();
+}
+
 io.on('connection', (socket) => {
   emitOnline();
-  socket.emit('board', N);
+  socket.emit('board', themedBoard(game.map));
 
   socket.on('hello', (d) => {
     const pid = d && d.pid;
@@ -472,8 +651,11 @@ io.on('connection', (socket) => {
     if (kp && !kp.isBot) { socket.data.pid = pid; kp.connected = true; }
     const pp = pawByPid(pid);
     if (pp && !pp.isBot) { socket.data.pid = pid; pp.connected = true; }
+    const rp = runByPid(pid);
+    if (rp && !rp.isBot) { socket.data.pid = pid; rp.connected = true; }
     socket.emit('state', { state: pub(), you: youOfKedi(socket) });
     socket.emit('pp_state', { state: ppPub(), you: youOfPaw(socket) });
+    socket.emit('run_state', { state: runPub(), you: youOfRun(socket) });
     emitOnline();
   });
 
@@ -481,6 +663,7 @@ io.on('connection', (socket) => {
     if (game.phase !== 'lobby') return socket.emit('errmsg', 'A game is running — you can watch, then join next round!');
     if (game.players.length >= 4) return socket.emit('errmsg', 'The lobby is full (4 Kedi max).');
     if (socket.data.pid && pawByPid(socket.data.pid)) return socket.emit('errmsg', 'Finish your Paw game first! 🐾');
+    if (socket.data.pid && runByPid(socket.data.pid)) return socket.emit('errmsg', 'Finish your race first! 🏃');
     const cat = d && d.cat;
     if (!CAT_KEYS.includes(cat)) return socket.emit('errmsg', 'Pick a Kedi first!');
     if (game.players.some(p => p.cat === cat)) return socket.emit('errmsg', 'That Kedi is taken in this game — pick another one!');
@@ -529,6 +712,18 @@ io.on('connection', (socket) => {
     broadcastState();
   });
 
+  socket.on('setmap', (d) => {
+    if (game.phase !== 'lobby') return;
+    if (!kediByPid(socket.data.pid)) return;
+    const key = d && d.map;
+    if (!MAPS[key] || game.map === key) return;
+    game.map = key;
+    B = themedBoard(key);
+    glog('🗺️ Kedi Life 맵 변경 → ' + MAPS[key].name);
+    io.emit('board', B);
+    broadcastState();
+  });
+
   socket.on('start', () => {
     if (game.phase !== 'lobby' || game.players.length < 1) return;
     const p = kediByPid(socket.data.pid);
@@ -562,7 +757,9 @@ io.on('connection', (socket) => {
     if (game.phase !== 'over') return;
     clearTimer();
     const humans = game.players.filter(p => !p.isBot && p.connected);
+    const keepMap = game.map;
     game = freshGame();
+    game.map = keepMap;
     for (const p of humans) {
       p.pos = START; p.snacks = 0; p.skip = 0; p.finished = false; p.finishOrder = 0;
       game.players.push(p);
@@ -575,6 +772,7 @@ io.on('connection', (socket) => {
     if (paw.phase !== 'lobby') return socket.emit('errmsg', 'A Paw game is running — watch this one!');
     if (paw.players.length >= 2) return socket.emit('errmsg', 'Paw Paw Paw is 1 vs 1 — seats are full!');
     if (socket.data.pid && kediByPid(socket.data.pid)) return socket.emit('errmsg', 'Finish your Kedi Life game first! 🎲');
+    if (socket.data.pid && runByPid(socket.data.pid)) return socket.emit('errmsg', 'Finish your race first! 🏃');
     const cat = d && d.cat;
     if (!CAT_KEYS.includes(cat)) return socket.emit('errmsg', 'Pick a Kedi first!');
     if (paw.players.some(p => p.cat === cat)) return socket.emit('errmsg', 'That Kedi is taken in this game — pick another one!');
@@ -645,6 +843,86 @@ io.on('connection', (socket) => {
     ppBroadcast();
   });
 
+  socket.on('run_join', (d) => {
+    if (run.phase !== 'lobby') return socket.emit('errmsg', 'A race is running — watch this one!');
+    if (run.players.length >= 4) return socket.emit('errmsg', 'The race is full (4 Kedi max).');
+    if (socket.data.pid && kediByPid(socket.data.pid)) return socket.emit('errmsg', 'Finish your Kedi Life game first! 🎲');
+    if (socket.data.pid && pawByPid(socket.data.pid)) return socket.emit('errmsg', 'Finish your Paw game first! 🐾');
+    const cat = d && d.cat;
+    if (!CAT_KEYS.includes(cat)) return socket.emit('errmsg', 'Pick a Kedi first!');
+    if (run.players.some(p => p.cat === cat)) return socket.emit('errmsg', 'That Kedi is taken in this game — pick another one!');
+    const name = String((d && d.name) || '').trim().slice(0, 12) || 'Kedi';
+    const p = { id: rid(), name, cat, isBot: false, connected: true, pos: 0, energy: 0, slowUntil: 0, boostUntil: 0, finished: false, finishOrder: 0, cdCheer: 0, cdSnack: 0, cdWater: 0 };
+    run.players.push(p);
+    socket.data.pid = p.id;
+    socket.emit('joined', { pid: p.id });
+    glog('👋 ' + name + ' (' + cat + ') joined Kedi Running');
+    runBroadcast();
+  });
+
+  socket.on('run_leave', () => {
+    const p = runByPid(socket.data.pid);
+    if (!p) return;
+    socket.data.pid = null;
+    if (run.phase === 'lobby') {
+      run.players = run.players.filter(q => q !== p);
+      glog('👋 ' + p.name + ' left the race lobby');
+    } else {
+      p.isBot = true;
+      glog('🚪 ' + p.name + ' left the race — a bot takes over');
+      if (run.players.every(q => q.isBot)) {
+        if (run.timer) { clearInterval(run.timer); run.timer = null; }
+        run = freshRun();
+        glog('🧹 Kedi Running 초기화 (모두 나감)');
+      }
+    }
+    runBroadcast();
+  });
+
+  socket.on('run_start', () => {
+    if (run.phase !== 'lobby' || run.players.length < 1) return;
+    if (!runByPid(socket.data.pid)) return;
+    if (run.players.length === 1) addRunBot();
+    run.phase = 'playing';
+    run.startAt = Date.now();
+    run.finishCount = 0;
+    run.nextRain = Date.now() + 7000 + Math.random() * 8000;
+    run.players.forEach(p => { p.pos = 0; p.energy = 0; p.finished = false; p.finishOrder = 0; p.slowUntil = 0; p.boostUntil = 0; });
+    glog('🚩 Kedi Running 시작! ' + run.players.map(q => q.name + (q.isBot ? '(bot)' : '')).join(' vs '));
+    runBroadcast();
+    run.timer = setInterval(runTick, 120);
+  });
+
+  socket.on('run_tap', () => {
+    if (run.phase !== 'playing') return;
+    const p = runByPid(socket.data.pid);
+    if (!p || p.finished) return;
+    if (Date.now() < run.rainUntil) return;
+    p.energy = Math.min(6, (p.energy || 0) + 0.9);
+  });
+
+  socket.on('run_item', (d) => {
+    if (run.phase !== 'playing') return;
+    const p = runByPid(socket.data.pid);
+    if (!p || p.finished) return;
+    const kind = d && d.kind;
+    if (!['cheer', 'snack', 'water'].includes(kind)) return;
+    runUseItem(run.players.indexOf(p), kind);
+  });
+
+  socket.on('run_again', () => {
+    if (run.phase !== 'over') return;
+    if (run.timer) { clearInterval(run.timer); run.timer = null; }
+    const humans = run.players.filter(p => !p.isBot && p.connected);
+    run = freshRun();
+    for (const p of humans) {
+      p.pos = 0; p.energy = 0; p.finished = false; p.finishOrder = 0; p.slowUntil = 0; p.boostUntil = 0;
+      run.players.push(p);
+    }
+    glog('🔄 Kedi Running 다시 하기');
+    runBroadcast();
+  });
+
   socket.on('disconnect', () => {
     emitOnline();
     const pid = socket.data.pid;
@@ -671,6 +949,18 @@ io.on('connection', (socket) => {
         glog('🧹 Paw Paw Paw 초기화 (모두 나감)');
       }
       ppBroadcast();
+    }
+    const rp = runByPid(pid);
+    if (rp) {
+      rp.connected = false;
+      if (run.phase === 'lobby') {
+        run.players = run.players.filter(q => q !== rp);
+      } else if (run.players.every(q => q.isBot || !q.connected)) {
+        if (run.timer) { clearInterval(run.timer); run.timer = null; }
+        run = freshRun();
+        glog('🧹 Kedi Running 초기화 (모두 나감)');
+      }
+      runBroadcast();
     }
   });
 });

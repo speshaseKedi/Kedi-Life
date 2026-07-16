@@ -29,6 +29,11 @@
   header .logo-cat{width:40px; height:40px;}
   header h1{font-family:'Fredoka',sans-serif; font-weight:600; font-size:24px; margin:0; letter-spacing:.5px;}
   header p{margin:0; font-size:12px; color:var(--ink-soft);}
+  #muteBtn{
+    flex:none; margin-left:8px; cursor:pointer;
+    background:var(--card); border:2px solid var(--line); border-radius:99px;
+    font-size:14px; padding:4px 9px;
+  }
   #online{
     margin-left:auto; flex:none;
     background:var(--card); border:2px solid var(--line); border-radius:99px;
@@ -202,7 +207,7 @@
   #catBody{position:absolute; bottom:0; left:0; width:150px; line-height:0;}
   #catBody svg{width:100%;}
   #catHead{
-    position:absolute; top:0; left:20px; width:110px; height:110px;
+    position:absolute; top:26px; left:20px; width:110px; height:110px;
     transition:transform .28s cubic-bezier(.34,1.3,.5,1); z-index:2;
   }
   #catHead svg{width:100%; height:100%; filter:drop-shadow(0 3px 1px #00000022);}
@@ -257,7 +262,7 @@
     position:fixed; inset:0; z-index:40; display:none;
     align-items:center; justify-content:center; pointer-events:none;
   }
-  #eventOverlay.on{display:flex;}
+  #eventOverlay.on{display:flex; pointer-events:auto; cursor:pointer;}
   #eventCard{
     background:var(--card); border:3px solid var(--ink); border-radius:22px;
     box-shadow:0 8px 0 #00000025;
@@ -268,6 +273,7 @@
   #eventCard .etx{font-family:'Fredoka',sans-serif; font-size:17px; margin-top:6px;}
   #eventCard .ewho{font-size:12px; color:var(--ink-soft); margin-top:2px;}
   #eventCard .edl{display:inline-block; margin-top:8px; font-weight:800; font-size:15px; padding:3px 12px; border-radius:99px;}
+  #eventCard .etap{font-size:10.5px; color:var(--ink-soft); margin-top:9px; opacity:.8;}
   .edl.up{background:#DFF2D2; color:#2F6B1E;}
   .edl.down{background:#FBDCD6; color:#A33326;}
   @keyframes pop{0%{transform:scale(.6); opacity:0}100%{transform:scale(1); opacity:1}}
@@ -328,6 +334,56 @@
     opacity:0; transition:opacity .25s; pointer-events:none; max-width:86vw; text-align:center;
   }
   #toast.on{opacity:1;}
+  .mappick{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:12px;}
+  .mapopt{
+    background:var(--card); border:2.5px solid var(--line); border-radius:14px;
+    padding:9px 4px; text-align:center; cursor:pointer; font-size:12px; font-weight:800;
+  }
+  .mapopt .mi{font-size:20px; display:block; margin-bottom:2px;}
+  .mapopt.sel{border-color:var(--accent); background:#FFF3E2;}
+  #runtracks{background:var(--grass); border:4px solid var(--grass-deep); border-radius:22px; padding:12px 10px;}
+  .lane{position:relative; height:56px; background:#FFF9EE66; border-radius:12px; margin-bottom:8px;}
+  .lane:last-child{margin-bottom:0;}
+  .lane .goal{
+    position:absolute; right:4px; top:0; bottom:0; width:10px; border-radius:0 10px 10px 0;
+    background:repeating-linear-gradient(45deg,#4A342A 0 6px,#FFF9EE 6px 12px); opacity:.8;
+  }
+  .lane .startl{position:absolute; left:52px; top:4px; bottom:4px; width:3px; background:#FFFFFF99; border-radius:2px;}
+  .lane .lname{
+    position:absolute; left:6px; top:50%; transform:translateY(-50%); z-index:1;
+    font-size:10px; font-weight:800; color:#33442499; max-width:42px;
+    overflow:hidden; white-space:nowrap;
+  }
+  .runner{position:absolute; top:4px; left:6px; width:46px; height:46px; transition:left .13s linear; z-index:2;}
+  .runner svg{width:100%; height:100%; filter:drop-shadow(0 2px 1px #00000022);}
+  .runner .rst{position:absolute; top:-9px; right:-8px; font-size:14px;}
+  .runner.bob{animation:runbob .28s ease-in-out infinite;}
+  @keyframes runbob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-4px) rotate(3deg)}}
+  .runner.crouch{transform:scaleY(.72) translateY(9px);}
+  #rainbanner{
+    display:none; text-align:center; font-family:'Fredoka',sans-serif; font-size:15px;
+    color:#22574C; background:#D7E8F5; border:2px solid #A8C6DE; border-radius:12px;
+    padding:7px; margin-top:10px;
+  }
+  #rainbanner.on{display:block;}
+  #runpads{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;}
+  .runpad{
+    border:none; cursor:pointer; font-family:'Fredoka',sans-serif; font-size:19px;
+    color:var(--ink); background:var(--card); border:3px solid var(--line); border-radius:18px;
+    padding:22px 6px; box-shadow:0 4px 0 var(--line); transition:transform .05s;
+    touch-action:manipulation; user-select:none; -webkit-user-select:none;
+  }
+  .runpad:active{transform:translateY(3px); box-shadow:0 1px 0 var(--line);}
+  .runpad.next{border-color:var(--accent); background:#FFF3E2;}
+  .runpad:disabled{opacity:.4; box-shadow:none;}
+  #runitems{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:10px;}
+  .runitem{
+    border:2px solid var(--line); cursor:pointer; font:inherit; font-weight:800; font-size:13px;
+    color:var(--ink); background:var(--card); border-radius:14px; padding:9px 4px;
+    touch-action:manipulation;
+  }
+  .runitem:disabled{opacity:.45;}
+  .runitem .cd{display:block; font-size:11px; color:var(--ink-soft); min-height:13px;}
   .lobbytip{
     display:flex; gap:10px; align-items:flex-start;
     background:#E7F3EF; border:2px solid #BBDCD2; border-radius:14px;
@@ -347,6 +403,7 @@
       <p>Cozy games for you and your friends 🐾</p>
     </div>
     <span id="online">👥 1</span>
+    <button id="muteBtn" aria-label="sound">🔊</button>
   </header>
 
   <section class="screen" id="scr-char">
@@ -370,11 +427,17 @@
       <div class="gd">1 vs 1 reflex duel. Count 3·2·1, pick left · center · right at the same time. First to 5 points wins!</div>
       <span class="gs" id="pawStatus">Empty — be the first!</span>
     </div>
+    <div class="game-card" id="cardRun">
+      <div class="gt">🏃 Kedi Running</div>
+      <div class="gd">Sprint race for 2–4 Kedi! Tap left·right fast (arrow keys on PC). Cheer yourself, tempt rivals with snacks, splash water — and hide when it rains.</div>
+      <span class="gs" id="runStatus">Empty — be the first!</span>
+    </div>
   </section>
 
   <section class="screen" id="scr-lobby">
     <button class="backlink" id="kediBack">‹ Back to games</button>
     <h2>Kedi Life · waiting room</h2>
+    <div class="mappick" id="mapPick"></div>
     <div class="lobbytip">
       <span>🔗</span>
       <span><b>Invite friends:</b> share this page's link. They open it, pick a Kedi, and hop in!</span>
@@ -406,7 +469,7 @@
     <h2>Paw Paw Paw · waiting room</h2>
     <div class="lobbytip">
       <span>🐾</span>
-      <span><b>How to play:</b> one Kedi points with a paw, one dodges. On "Paw!" both pick a direction. Same direction = point for the paw! Sides swap every round. First to 5 wins.</span>
+      <span><b>How to play:</b> one Kedi points with a paw, one dodges. On "Paw!" both pick a direction. Same direction = point for the paw! Sides swap every round. First to 3 wins.</span>
     </div>
     <div class="plist" id="ppLobbyList"></div>
     <button class="btn ghost" id="ppCopyBtn" style="margin-bottom:10px;">Copy invite link</button>
@@ -434,6 +497,34 @@
     </div>
     <div id="ppstatus">…</div>
   </section>
+
+  <section class="screen" id="scr-runlobby">
+    <button class="backlink" id="runBack">‹ Back to games</button>
+    <h2>Kedi Running · waiting room</h2>
+    <div class="lobbytip">
+      <span>🏃</span>
+      <span><b>How to run:</b> tap LEFT and RIGHT one after another, fast! (arrow keys on PC). 📣 boosts you, 🍪 tempts rivals, 💧 makes them slip — and when it rains 🌧️ everyone must stop.</span>
+    </div>
+    <div class="plist" id="runLobbyList"></div>
+    <button class="btn ghost" id="runCopyBtn" style="margin-bottom:10px;">Copy invite link</button>
+    <button class="btn" id="runStartBtn">Start race</button>
+  </section>
+
+  <section class="screen" id="scr-rungame">
+    <button class="backlink" id="runWatchBack">‹ Back to games</button>
+    <div id="runtracks"></div>
+    <div id="rainbanner">🌧️ Rain! Everyone takes cover...</div>
+    <div id="runpads">
+      <button class="runpad" id="padL">🐾 LEFT</button>
+      <button class="runpad" id="padR">RIGHT 🐾</button>
+    </div>
+    <div id="runitems">
+      <button class="runitem" data-kind="cheer">📣 Cheer<span class="cd"></span></button>
+      <button class="runitem" data-kind="snack">🍪 Snacks<span class="cd"></span></button>
+      <button class="runitem" data-kind="water">💧 Splash<span class="cd"></span></button>
+    </div>
+    <div id="runstatus" class="note" style="text-align:center;"></div>
+  </section>
 </div>
 
 <div id="eventOverlay"><div id="eventCard"></div></div>
@@ -445,6 +536,48 @@
 <script>
 "use strict";
 var socket = io();
+
+var SFX = (function(){
+  var ctx = null, muted = localStorage.getItem('kedi_mute') === '1';
+  function ac(){
+    if (!ctx){
+      try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){ ctx = null; }
+    }
+    if (ctx && ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  }
+  document.addEventListener('pointerdown', function(){ ac(); }, { capture: true });
+  function tone(f0, f1, dur, type, vol, when){
+    if (muted) return;
+    var c = ac(); if (!c) return;
+    try {
+      var t = c.currentTime + (when || 0);
+      var o = c.createOscillator(), g = c.createGain();
+      o.type = type || 'sine';
+      o.frequency.setValueAtTime(f0, t);
+      if (f1) o.frequency.exponentialRampToValueAtTime(Math.max(40, f1), t + dur);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol || 0.15, t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(c.destination);
+      o.start(t); o.stop(t + dur + 0.05);
+    } catch(e){}
+  }
+  return {
+    toggle: function(){ muted = !muted; localStorage.setItem('kedi_mute', muted ? '1' : '0'); return muted; },
+    isMuted: function(){ return muted; },
+    tap: function(){ tone(620, 500, .06, 'sine', .12); },
+    pop: function(){ tone(700, 1250, .09, 'square', .07); },
+    coin: function(){ tone(1046, 0, .07, 'square', .08); tone(1568, 0, .13, 'square', .08, .07); },
+    womp: function(){ tone(320, 140, .28, 'sawtooth', .09); },
+    tick: function(){ tone(1250, 0, .05, 'square', .10); },
+    thump: function(){ tone(170, 80, .16, 'sine', .22); },
+    hop: function(i){ tone(430 + (i % 8) * 45, 0, .045, 'sine', .06); },
+    hit: function(){ tone(784, 0, .08, 'square', .09); tone(988, 0, .08, 'square', .09, .08); tone(1319, 0, .18, 'square', .10, .16); },
+    fanfare: function(){ [523, 659, 784, 1046].forEach(function(f, i){ tone(f, 0, .17, 'square', .09, i * .13); }); },
+    rattle: function(){ tone(280 + Math.random() * 520, 0, .04, 'triangle', .05); }
+  };
+})();
 var BOARDC = null, S = null, YOU = -1, PS = null, PYOU = -1;
 var animating = false, pending = null;
 var POS = [], SNACKS = [];
@@ -455,6 +588,13 @@ var LAYOUT = { pad: 12, gap: 7, cell: 60, w: 0, h: 0 };
 var CHOICE = null;
 var WATCH = null;
 var ppPicked = false, ppRoundOn = false, ppBarTimer = null;
+var RUNS = null, RYOU = -1, runLastFx = 0, runNextSide = 0, runLastTap = 0, runLaneCount = -1, runPrevPhase = '';
+var THEME_STYLE = {
+  park: { board: '#8FBF7F', border: '#6EA05F', ribbon: '#FFFFFF88' },
+  alley: { board: '#4A4E69', border: '#393C55', ribbon: '#FFD97355' },
+  playground: { board: '#E5C185', border: '#C79B5B', ribbon: '#FFFFFF99' }
+};
+var MAP_INFO = { park: ['🌳', 'Sunny Park'], alley: ['🌙', 'Night Alley'], playground: ['🛝', 'Playground'] };
 var uidc = 0;
 
 var CAT_INFO = {
@@ -580,7 +720,7 @@ function toast(msg){
 }
 
 function show(scr){
-  ['scr-char','scr-menu','scr-lobby','scr-game','scr-pplobby','scr-ppgame'].forEach(function(s){
+  ['scr-char','scr-menu','scr-lobby','scr-game','scr-pplobby','scr-ppgame','scr-runlobby','scr-rungame'].forEach(function(s){
     $(s).classList.toggle('on', s === scr);
   });
 }
@@ -605,6 +745,16 @@ function route(){
   if (WATCH === 'paw' && PS && PS.phase !== 'lobby'){
     renderPPGame();
     if (PS.phase === 'over') renderPPOver();
+    return;
+  }
+  if (RUNS && RYOU >= 0){
+    if (RUNS.phase === 'lobby') renderRunLobby();
+    else { renderRunGame(); if (RUNS.phase === 'over') renderRunOver(); }
+    return;
+  }
+  if (WATCH === 'run' && RUNS && RUNS.phase !== 'lobby'){
+    renderRunGame();
+    if (RUNS.phase === 'over') renderRunOver();
     return;
   }
   WATCH = null;
@@ -657,6 +807,19 @@ function renderMenu(){
       ps.className = 'gs busy';
     }
   }
+  updateRunCard();
+}
+
+function updateRunCard(){
+  var rs = $('runStatus');
+  if (!RUNS || !rs) return;
+  if (RUNS.phase === 'lobby'){
+    rs.textContent = RUNS.players.length === 0 ? 'Empty — be the first!' : RUNS.players.length + '/4 at the start line — join!';
+    rs.className = 'gs';
+  } else {
+    rs.textContent = 'Race in progress — tap to watch';
+    rs.className = 'gs busy';
+  }
 }
 
 function nodeCenter(id){
@@ -674,6 +837,9 @@ function buildBoard(){
   BOARDC.forEach(function(nd){ if (nd.x > maxX) maxX = nd.x; if (nd.y > maxY) maxY = nd.y; });
   var bw = board.clientWidth;
   if (!bw) return;
+  var th = THEME_STYLE[(S && S.map) || 'park'] || THEME_STYLE.park;
+  board.style.background = th.board;
+  board.style.borderColor = th.border;
   LAYOUT.cell = (bw - 2 * LAYOUT.pad - maxX * LAYOUT.gap) / (maxX + 1);
   LAYOUT.w = bw;
   LAYOUT.h = 2 * LAYOUT.pad + (maxY + 1) * LAYOUT.cell + maxY * LAYOUT.gap;
@@ -688,7 +854,7 @@ function buildBoard(){
     (nd.next || []).forEach(function(nx){
       var b = nodeCenter(nx);
       lines += '<line x1="' + a.x + '" y1="' + a.y + '" x2="' + b.x + '" y2="' + b.y +
-        '" stroke="#FFFFFF88" stroke-width="12" stroke-linecap="round"/>';
+        '" stroke="' + th.ribbon + '" stroke-width="12" stroke-linecap="round"/>';
     });
   });
   svg.innerHTML = lines;
@@ -786,9 +952,11 @@ async function diceRollAnim(n){
   var t = 0;
   while (t < 750){
     diceFace(1 + Math.floor(Math.random() * 6));
+    SFX.rattle();
     await wait(85);
     t += 85;
   }
+  SFX.thump();
   d.classList.remove('shake');
   diceFace(n);
   await wait(320);
@@ -818,9 +986,14 @@ async function showEvents(events){
     }
     card.innerHTML = '<div class="eic">' + ev.icon + '</div>' +
       '<div class="etx">' + esc(ev.text) + '</div>' +
-      (who ? '<div class="ewho">' + esc(who) + '</div>' : '') + dl;
+      (who ? '<div class="ewho">' + esc(who) + '</div>' : '') + dl +
+      '<div class="etap">tap to continue ▸</div>';
     card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
     ov.classList.add('on');
+    if (ev.icon === '🏠') SFX.hit();
+    else if (typeof ev.delta === 'number' && ev.delta > 0) SFX.coin();
+    else if (typeof ev.delta === 'number' && ev.delta < 0) SFX.womp();
+    else SFX.pop();
     if (typeof ev.delta === 'number' && ev.pIdx != null){
       SNACKS[ev.pIdx] = Math.max(0, SNACKS[ev.pIdx] + ev.delta);
       renderChips();
@@ -833,9 +1006,25 @@ async function showEvents(events){
       await wait(500);
     }
     $('lastev').textContent = ev.icon + ' ' + ev.text;
-    await wait(1500);
+    await waitTap(2600);
   }
   ov.classList.remove('on');
+}
+
+function waitTap(ms){
+  return new Promise(function(res){
+    var done = false;
+    var ov = $('eventOverlay');
+    function fin(){
+      if (done) return;
+      done = true;
+      ov.removeEventListener('pointerdown', fin);
+      clearTimeout(tm);
+      res();
+    }
+    var tm = setTimeout(fin, ms);
+    ov.addEventListener('pointerdown', fin);
+  });
 }
 
 function showChoiceModal(choice){
@@ -847,9 +1036,11 @@ function showChoiceModal(choice){
       '<div class="ch">' + esc(op.hint) + '</div></button>';
   });
   card.innerHTML = html;
+  SFX.pop();
   $('choiceOverlay').classList.add('on');
   Array.prototype.forEach.call(card.querySelectorAll('.choice-btn'), function(b){
     b.onclick = function(){
+      SFX.tap();
       socket.emit('choice', { to: +b.getAttribute('data-to') });
       hideChoiceModal();
       $('status').textContent = '🐾 Off you go...';
@@ -881,6 +1072,7 @@ async function animateTurn(pl){
       POS[st.pIdx] = st.path[t];
       placeTokens();
       hopToken(st.pIdx);
+      SFX.hop(t);
       await wait(265);
     }
   }
@@ -910,6 +1102,17 @@ function apply(payload){
 function renderLobby(){
   show('scr-lobby');
   $('overOverlay').classList.remove('on');
+  var mp = $('mapPick');
+  mp.innerHTML = '';
+  Object.keys(MAP_INFO).forEach(function(k){
+    var d = document.createElement('div');
+    d.className = 'mapopt' + (S.map === k ? ' sel' : '');
+    d.innerHTML = '<span class="mi">' + MAP_INFO[k][0] + '</span>' + MAP_INFO[k][1];
+    d.onclick = function(){
+      if (S.map !== k){ SFX.tap(); socket.emit('setmap', { map: k }); }
+    };
+    mp.appendChild(d);
+  });
   var list = $('lobbyList');
   list.innerHTML = '';
   S.players.forEach(function(p, i){
@@ -1110,10 +1313,12 @@ async function onPPRound(payload){
   for (var i = 0; i < counts.length; i++){
     ppCenter('<div class="big">' + counts[i] + '</div>');
     $('bigpaw').className = (i % 2 === 0) ? 'wig1' : 'wig2';
+    SFX.tick();
     await wait(700);
   }
   $('bigpaw').className = '';
   ppCenter('<div class="big">PAW!</div>');
+  SFX.thump();
   await wait(350);
   ppCenter('');
   if (!ppRoundOn) return;
@@ -1143,8 +1348,10 @@ async function onPPResult(payload){
   if (payload.match){
     $('dodgerArea').classList.add('hitshake');
     ppCenter('<div class="banner">🎯 HIT! +1</div>');
+    SFX.hit();
   } else {
     ppCenter('<div class="banner">💨 MISS!</div>');
+    SFX.womp();
   }
   PS = payload.state; PYOU = payload.you;
   renderPPGameScoreOnly();
@@ -1153,6 +1360,7 @@ async function onPPResult(payload){
   if (payload.over){
     PS = payload.state;
     renderPPGame();
+    SFX.fanfare();
     renderPPOver();
   } else {
     $('ppstatus').textContent = '🔄 Paws switch! Next round...';
@@ -1164,7 +1372,7 @@ function renderPPGameScoreOnly(){
   if (PS.players.length === 2){
     var pipsFor = function(n){
       var h = '<span class="pips">';
-      for (var i = 0; i < 5; i++) h += '<span class="' + (i < n ? 'on' : '') + '"></span>';
+      for (var i = 0; i < 3; i++) h += '<span class="' + (i < n ? 'on' : '') + '"></span>';
       return h + '</span>';
     };
     sc.innerHTML = catSVG(PS.players[0].cat) + pipsFor(PS.scores[0]) +
@@ -1194,6 +1402,179 @@ function renderPPOver(){
   }
   else $('ppOverBackBtn').onclick = function(){ WATCH = null; ov.classList.remove('on'); route(); };
 }
+
+function renderRunLobby(){
+  show('scr-runlobby');
+  $('overOverlay').classList.remove('on');
+  var list = $('runLobbyList');
+  list.innerHTML = '';
+  RUNS.players.forEach(function(p, i){
+    var d = document.createElement('div');
+    d.className = 'prow';
+    d.innerHTML = catSVG(p.cat) + '<span class="pn">' + esc(p.name) + '</span>' +
+      (i === RYOU ? '<span class="pill me">you</span>' : '') +
+      (p.isBot ? '<span class="pill">bot</span>' : '');
+    list.appendChild(d);
+  });
+  for (var k = RUNS.players.length; k < 4; k++){
+    var e = document.createElement('div');
+    e.className = 'prow';
+    e.style.opacity = '.5';
+    e.innerHTML = '<span style="width:34px;text-align:center;font-size:20px;">💭</span><span class="pn" style="color:var(--ink-soft)">Waiting for a racer...</span>';
+    list.appendChild(e);
+  }
+  $('runStartBtn').textContent = RUNS.players.length === 1 ? 'Start vs a bot 🤖' : 'Start race (' + RUNS.players.length + ' Kedi)';
+}
+
+function buildLanes(){
+  var tr = $('runtracks');
+  tr.innerHTML = '';
+  RUNS.players.forEach(function(p, i){
+    var lane = document.createElement('div');
+    lane.className = 'lane';
+    lane.innerHTML = '<span class="lname">' + esc(p.name) + '</span>' +
+      '<span class="startl"></span><span class="goal"></span>' +
+      '<div class="runner" id="runner' + i + '">' + catSVG(p.cat) + '<span class="rst"></span></div>';
+    tr.appendChild(lane);
+  });
+  runLaneCount = RUNS.players.length;
+}
+
+function updatePads(){
+  var meIn = RYOU >= 0 && RUNS.phase === 'playing' && RUNS.players[RYOU] && !RUNS.players[RYOU].finished;
+  var canTap = meIn && !RUNS.rain;
+  $('padL').disabled = !canTap;
+  $('padR').disabled = !canTap;
+  $('padL').classList.toggle('next', canTap && runNextSide === 0);
+  $('padR').classList.toggle('next', canTap && runNextSide === 1);
+  var me = RYOU >= 0 ? RUNS.players[RYOU] : null;
+  Array.prototype.forEach.call(document.querySelectorAll('.runitem'), function(b){
+    var kind = b.getAttribute('data-kind');
+    var cdl = me && me.cds ? me.cds[kind] : 0;
+    var usable = meIn && cdl <= 0;
+    b.disabled = !usable;
+    b.querySelector('.cd').textContent = (me && cdl > 0) ? Math.ceil(cdl / 1000) + 's' : ' ';
+  });
+}
+
+function renderRunGame(){
+  show('scr-rungame');
+  var bk = $('runWatchBack');
+  bk.style.display = '';
+  bk.textContent = (RYOU >= 0) ? '‹ Quit race' : '‹ Back to games';
+  if (runLaneCount !== RUNS.players.length) buildLanes();
+  var tr = $('runtracks');
+  var laneW = tr.clientWidth - 20;
+  RUNS.players.forEach(function(p, i){
+    var el = $('runner' + i);
+    if (!el) return;
+    var usable = laneW - 46 - 18;
+    el.style.left = (6 + (p.pos / 100) * usable) + 'px';
+    var cls = 'runner';
+    if (RUNS.rain && !p.finished) cls += ' crouch';
+    else if (RUNS.phase === 'playing' && !p.finished) cls += ' bob';
+    el.className = cls;
+    el.querySelector('.rst').textContent = p.finished ? '🏁' : (p.slowed ? '🍪' : (p.boosted ? '📣' : ''));
+  });
+  $('rainbanner').classList.toggle('on', !!RUNS.rain);
+  updatePads();
+  var st = $('runstatus');
+  if (RYOU < 0) st.textContent = '👀 Watching the race!';
+  else if (RUNS.phase === 'over') st.textContent = '🎉 Race over!';
+  else if (RUNS.players[RYOU].finished) st.textContent = '🏁 You finished #' + RUNS.players[RYOU].finishOrder + '! Watch the rest.';
+  else if (RUNS.rain) st.textContent = '🌧️ Wait out the rain...';
+  else st.textContent = 'Tap LEFT · RIGHT, one after another — fast!';
+}
+
+function renderRunOver(){
+  var ov = $('overOverlay'), card = $('overCard');
+  var medals = ['🥇','🥈','🥉','4️⃣'];
+  var winner = RUNS.players[RUNS.ranking[0]];
+  var rows = RUNS.ranking.map(function(pi, r){
+    var p = RUNS.players[pi];
+    return '<div class="rrow' + (r === 0 ? ' first' : '') + '">' +
+      '<span class="medal">' + medals[r] + '</span>' + catSVG(p.cat) +
+      '<span class="rn">' + esc(p.name) + (pi === RYOU ? ' (you)' : '') + (p.isBot ? ' 🤖' : '') + '</span>' +
+      '<span class="rs">' + (p.finished ? '#' + p.finishOrder : Math.round(p.pos) + 'm') + '</span></div>';
+  }).join('');
+  card.innerHTML = '<div style="font-size:42px;">🏆</div>' +
+    '<h2>' + esc(winner.name) + ' wins!</h2>' +
+    '<div class="wsub">The fastest paws in town 🏃</div>' + rows +
+    (RYOU >= 0 ? '<button class="btn" id="runAgainBtn" style="margin-top:8px;">Race again</button><button class="btn ghost" id="runOverLeaveBtn" style="margin-top:8px;">Back to games</button>'
+      : '<button class="btn ghost" id="runOverBackBtn" style="margin-top:8px;">Back to games</button>');
+  ov.classList.add('on');
+  if (RYOU >= 0){
+    $('runAgainBtn').onclick = function(){ SFX.tap(); socket.emit('run_again'); };
+    $('runOverLeaveBtn').onclick = function(){ socket.emit('run_leave'); RYOU = -1; WATCH = null; ov.classList.remove('on'); route(); };
+  } else {
+    $('runOverBackBtn').onclick = function(){ WATCH = null; ov.classList.remove('on'); route(); };
+  }
+}
+
+function handleRunFx(){
+  if (!RUNS || !RUNS.fx) return;
+  var onScreen = $('scr-rungame').classList.contains('on');
+  RUNS.fx.forEach(function(f){
+    if (f.seq <= runLastFx) return;
+    runLastFx = f.seq;
+    if (!onScreen) return;
+    if (f.type === 'rain') SFX.womp();
+    else if (f.type === 'finish') SFX.hit();
+    else if (f.type === 'snack') SFX.pop();
+    else if (f.type === 'slipb') SFX.womp();
+    else if (f.type === 'slipf') SFX.coin();
+    else if (f.type === 'cheer') SFX.tick();
+  });
+}
+
+function runTap(side){
+  if (RYOU < 0 || !RUNS || RUNS.phase !== 'playing') return;
+  var me = RUNS.players[RYOU];
+  if (!me || me.finished || RUNS.rain) return;
+  if (side !== runNextSide) return;
+  var now = Date.now();
+  if (now - runLastTap < 55) return;
+  runLastTap = now;
+  runNextSide = 1 - runNextSide;
+  socket.emit('run_tap');
+  SFX.hop(side === 0 ? 1 : 4);
+  $('padL').classList.toggle('next', runNextSide === 0);
+  $('padR').classList.toggle('next', runNextSide === 1);
+}
+$('padL').addEventListener('pointerdown', function(e){ e.preventDefault(); runTap(0); });
+$('padR').addEventListener('pointerdown', function(e){ e.preventDefault(); runTap(1); });
+document.addEventListener('keydown', function(e){
+  if (!$('scr-rungame').classList.contains('on')) return;
+  if (e.repeat) return;
+  if (e.key === 'ArrowLeft'){ e.preventDefault(); runTap(0); }
+  else if (e.key === 'ArrowRight'){ e.preventDefault(); runTap(1); }
+});
+Array.prototype.forEach.call(document.querySelectorAll('.runitem'), function(b){
+  b.onclick = function(){
+    if (RYOU < 0) return;
+    SFX.tap();
+    socket.emit('run_item', { kind: b.getAttribute('data-kind') });
+  };
+});
+$('runBack').onclick = function(){ socket.emit('run_leave'); RYOU = -1; route(); };
+$('runWatchBack').onclick = function(){
+  if (RYOU >= 0){
+    if (!confirm('Leave the race? A bot takes over your Kedi 🤖')) return;
+    socket.emit('run_leave');
+    RYOU = -1;
+  }
+  WATCH = null;
+  $('overOverlay').classList.remove('on');
+  route();
+};
+$('runStartBtn').onclick = function(){ SFX.tap(); socket.emit('run_start'); };
+$('runCopyBtn').onclick = function(){ copyLink(); };
+$('cardRun').onclick = function(){
+  var id = ident();
+  if (!id) return renderChar();
+  if (RUNS && RUNS.phase !== 'lobby'){ WATCH = 'run'; route(); return; }
+  socket.emit('run_join', { name: id.name, cat: id.cat });
+};
 
 $('charBtn').onclick = function(){
   if (!selCat) return toast('Pick a Kedi first! 🐱');
@@ -1241,12 +1622,14 @@ $('ppWatchBack').onclick = function(){
 $('startBtn').onclick = function(){ socket.emit('start'); };
 $('ppStartBtn').onclick = function(){ socket.emit('pp_start'); };
 $('rollbtn').onclick = function(){
+  SFX.tap();
   $('rollbtn').disabled = true;
   socket.emit('roll');
 };
 Array.prototype.forEach.call(document.querySelectorAll('.paw-btn'), function(b){
   b.onclick = function(){
     if (PYOU < 0 || ppPicked) return;
+    SFX.tap();
     ppPicked = true;
     socket.emit('pp_pick', { dir: +b.getAttribute('data-dir') });
     setPPButtons(false);
@@ -1297,6 +1680,7 @@ socket.on('turn', function(payload){
     animating = true;
     try { await animateTurn(payload); } catch(e){ console.error(e); }
     animating = false;
+    if (payload.state && payload.state.phase === 'over') SFX.fanfare();
     apply(pending || payload);
     pending = null;
   })();
@@ -1313,10 +1697,30 @@ socket.on('pp_result', function(payload){
   if (payload.you < 0 && WATCH !== 'paw'){ PS = payload.state; PYOU = payload.you; return; }
   onPPResult(payload);
 });
+socket.on('run_state', function(payload){
+  var prevPhase = RUNS ? RUNS.phase : '';
+  RUNS = payload.state; RYOU = payload.you;
+  handleRunFx();
+  var involved = RYOU >= 0 || WATCH === 'run';
+  if (!involved){
+    if ($('scr-menu').classList.contains('on')) updateRunCard();
+    return;
+  }
+  if (prevPhase !== 'playing' && RUNS.phase === 'playing'){ runNextSide = 0; runLaneCount = -1; }
+  if (prevPhase === 'playing' && RUNS.phase === 'over') SFX.fanfare();
+  if (animating || ppRoundOn) return;
+  route();
+});
 
 window.addEventListener('resize', function(){
   if (cellEls.length && $('scr-game').classList.contains('on')){ buildBoard(); placeTokens(); }
 });
+$('muteBtn').textContent = SFX.isMuted() ? '🔇' : '🔊';
+$('muteBtn').onclick = function(){
+  var m = SFX.toggle();
+  $('muteBtn').textContent = m ? '🔇' : '🔊';
+  if (!m) SFX.tap();
+};
 diceFace(6);
 </script>
 </body>
