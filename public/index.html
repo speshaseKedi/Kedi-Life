@@ -29,6 +29,35 @@
   header .logo-cat{width:40px; height:40px;}
   header h1{font-family:'Fredoka',sans-serif; font-weight:600; font-size:24px; margin:0; letter-spacing:.5px;}
   header p{margin:0; font-size:12px; color:var(--ink-soft);}
+  #gearBtn{
+    flex:none; margin-left:6px; cursor:pointer;
+    background:var(--card); border:2px solid var(--line); border-radius:99px;
+    font-size:13px; padding:4px 8px;
+  }
+  #roomWrap{max-width:340px; margin:26px auto 0; text-align:center;}
+  #roomWrap .big{font-size:52px; margin-bottom:2px;}
+  #roomWrap h2{margin:6px 0 4px;}
+  #roomWrap p{font-size:13px; color:var(--ink-soft); margin:0 0 18px; line-height:1.5;}
+  #roomInput{
+    width:100%; font:inherit; font-size:26px; font-weight:800; text-align:center;
+    letter-spacing:10px; color:var(--ink);
+    background:var(--card); border:2.5px solid var(--line); border-radius:16px;
+    padding:14px; margin-bottom:14px; outline:none;
+  }
+  #roomInput:focus{border-color:var(--teal);}
+  #adminPanel .arow{
+    background:var(--card); border:2px solid var(--line); border-radius:14px;
+    padding:10px 12px; margin-bottom:9px; text-align:left;
+  }
+  #adminPanel .ah{display:flex; align-items:center; gap:8px; font-family:'Fredoka',sans-serif; font-size:16px;}
+  #adminPanel .ah .aon{margin-left:auto; font-size:13px; font-weight:800; color:var(--teal);}
+  #adminPanel .aa{font-size:12.5px; color:var(--ink-soft); margin-top:3px;}
+  #adminPanel .ap{font-size:12.5px; margin-top:4px;}
+  #adminPanel .alog{
+    margin-top:7px; max-height:96px; overflow:auto;
+    background:#FBF2E0; border-radius:10px; padding:6px 8px; font-size:11.5px; line-height:1.5;
+  }
+  #adminPanel .alog .lt{color:var(--ink-soft); margin-right:6px; font-variant-numeric:tabular-nums;}
   #muteBtn{
     flex:none; margin-left:8px; cursor:pointer;
     background:var(--card); border:2px solid var(--line); border-radius:99px;
@@ -404,7 +433,29 @@
     </div>
     <span id="online">👥 1</span>
     <button id="muteBtn" aria-label="sound">🔊</button>
+    <button id="gearBtn" aria-label="settings">⚙️</button>
   </header>
+
+  <section class="screen" id="scr-room">
+    <div id="roomWrap">
+      <div class="big">🐾</div>
+      <h2>Enter room code</h2>
+      <p>Ask your host for the 4-digit room code.<br>친구에게 받은 방 번호를 입력하세요.</p>
+      <input type="text" id="roomInput" inputmode="numeric" maxlength="4" placeholder="----">
+      <button class="btn" id="roomBtn">Enter</button>
+    </div>
+  </section>
+
+  <section class="screen" id="scr-admin">
+    <button class="backlink" id="adminBack">‹ Back</button>
+    <h2>🔧 Admin panel</h2>
+    <div id="adminGate">
+      <p class="note">Enter your admin key to see every room.</p>
+      <input type="text" id="adminInput" placeholder="Admin key">
+      <button class="btn" id="adminBtn">Open panel</button>
+    </div>
+    <div id="adminPanel"></div>
+  </section>
 
   <section class="screen" id="scr-char">
     <h2>Pick your Kedi!</h2>
@@ -536,6 +587,7 @@
 <script>
 "use strict";
 var socket = io();
+var ROOM = null;
 
 var SFX = (function(){
   var ctx = null, muted = localStorage.getItem('kedi_mute') === '1';
@@ -720,13 +772,14 @@ function toast(msg){
 }
 
 function show(scr){
-  ['scr-char','scr-menu','scr-lobby','scr-game','scr-pplobby','scr-ppgame','scr-runlobby','scr-rungame'].forEach(function(s){
+  ['scr-room','scr-admin','scr-char','scr-menu','scr-lobby','scr-game','scr-pplobby','scr-ppgame','scr-runlobby','scr-rungame'].forEach(function(s){
     $(s).classList.toggle('on', s === scr);
   });
 }
 
 function route(){
   if (ppRoundOn) return;
+  if (!ROOM){ renderRoom(); return; }
   if (S && YOU >= 0){
     if (S.phase === 'lobby') renderLobby();
     else { renderGameStatic(S.turn); renderDock(); if (S.phase === 'over') renderOver(); }
@@ -762,6 +815,11 @@ function route(){
   hideChoiceModal();
   if (!ident()) renderChar();
   else renderMenu();
+}
+
+function renderRoom(){
+  show('scr-room');
+  $('online').textContent = '👥 —';
 }
 
 function renderChar(){
@@ -1576,6 +1634,54 @@ $('cardRun').onclick = function(){
   socket.emit('run_join', { name: id.name, cat: id.cat });
 };
 
+function submitRoom(){
+  var code = $('roomInput').value.replace(/[^0-9]/g, '').slice(0, 4);
+  if (code.length !== 4) return toast('Enter the 4-digit room code.');
+  SFX.tap();
+  ROOM = code;
+  socket.emit('enter', { room: code, pid: localStorage.getItem('catlife_pid') });
+}
+$('roomBtn').onclick = submitRoom;
+$('roomInput').addEventListener('keydown', function(e){ if (e.key === 'Enter') submitRoom(); });
+
+$('gearBtn').onclick = function(){
+  SFX.tap();
+  $('adminPanel').innerHTML = '';
+  $('adminGate').style.display = '';
+  show('scr-admin');
+};
+$('adminBack').onclick = function(){ route(); };
+function submitAdmin(){
+  var key = $('adminInput').value.trim();
+  if (!key) return;
+  socket.emit('admin', { key: key });
+}
+$('adminBtn').onclick = submitAdmin;
+$('adminInput').addEventListener('keydown', function(e){ if (e.key === 'Enter') submitAdmin(); });
+var adminTimer = null;
+function renderAdminPanel(list){
+  $('adminGate').style.display = 'none';
+  var html = '';
+  list.forEach(function(r){
+    var people = r.people.length ? r.people.map(esc).join(', ') : '아무도 없음';
+    var logs = r.log.length
+      ? r.log.map(function(e){ return '<div><span class="lt">' + esc(e.time) + '</span>' + esc(e.s) + '</div>'; }).join('')
+      : '<div style="color:var(--ink-soft)">기록 없음</div>';
+    html += '<div class="arow">' +
+      '<div class="ah">🚪 ' + esc(r.code) + '<span class="aon">👥 ' + r.online + '</span></div>' +
+      '<div class="aa">진행 중: ' + esc(r.active) + '</div>' +
+      '<div class="ap">👤 ' + people + '</div>' +
+      '<div class="alog">' + logs + '</div></div>';
+  });
+  $('adminPanel').innerHTML = html;
+  var keyVal = $('adminInput').value.trim();
+  if (adminTimer) clearInterval(adminTimer);
+  adminTimer = setInterval(function(){
+    if ($('scr-admin').classList.contains('on') && keyVal) socket.emit('admin', { key: keyVal });
+    else { clearInterval(adminTimer); adminTimer = null; }
+  }, 4000);
+}
+
 $('charBtn').onclick = function(){
   if (!selCat) return toast('Pick a Kedi first! 🐱');
   var name = $('nameInput').value.trim();
@@ -1651,8 +1757,19 @@ $('copyBtn').onclick = copyLink;
 $('ppCopyBtn').onclick = copyLink;
 
 socket.on('connect', function(){
-  socket.emit('hello', { pid: localStorage.getItem('catlife_pid') });
+  if (ROOM) socket.emit('enter', { room: ROOM, pid: localStorage.getItem('catlife_pid') });
 });
+socket.on('entered', function(d){
+  ROOM = d.room;
+  route();
+});
+socket.on('badroom', function(){
+  ROOM = null;
+  renderRoom();
+  toast('Hmm, that room code doesn\'t exist. 🐱');
+});
+socket.on('admin_denied', function(){ toast('Wrong admin key. 🔒'); });
+socket.on('admin_ok', function(d){ renderAdminPanel(d.rooms); });
 socket.on('joined', function(d){
   localStorage.setItem('catlife_pid', d.pid);
 });

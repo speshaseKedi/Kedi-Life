@@ -17,41 +17,48 @@ const CAT_KEYS = ['tuxedo', 'orange', 'white', 'calico', 'gray', 'siamese'];
 const BOT_NAMES = ['Mochi', 'Coco', 'Nabi', 'Tora'];
 const PAW_WIN = 3;
 
-const LOG = [];
 function glog(s) {
-  LOG.push({ t: Date.now(), s });
-  if (LOG.length > 400) LOG.shift();
+  const L = CUR.log;
+  L.push({ t: Date.now(), s });
+  if (L.length > 400) L.shift();
 }
 
+function escHtml(s) { return String(s).replace(/[&<>]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[ch])); }
+
 app.get('/log', (req, res) => {
-  const KEY = process.env.LOG_KEY;
+  const KEY = process.env.ADMIN_KEY;
   if (!KEY) {
     return res.status(503).send('<html lang="ko"><meta charset="UTF-8"><body style="font-family:system-ui;background:#FDF3E3;color:#4A342A;padding:24px;">' +
-      '<h3>🔒 기록 페이지 잠금</h3><p>Render 대시보드 → 이 서비스 → Environment 에서<br><b>LOG_KEY</b> 환경변수를 추가하면 이 페이지가 열립니다.</p></body></html>');
+      '<h3>🔒 기록 페이지 잠금</h3><p>Render 대시보드 → 이 서비스 → Environment 에서<br><b>ADMIN_KEY</b> 환경변수를 추가하면 이 페이지가 열립니다.</p></body></html>');
   }
   if (req.query.key !== KEY) {
     return res.status(404).send('<html><meta charset="UTF-8"><body style="font-family:system-ui;background:#FDF3E3;color:#4A342A;padding:24px;text-align:center;">' +
       '<div style="font-size:44px;">🐱💤</div><p>Nothing here but a sleepy cat.</p></body></html>');
   }
-  const rows = LOG.slice().reverse().map(e => {
-    const time = new Date(e.t).toLocaleTimeString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false });
-    return '<div class="row"><span class="tm">' + time + '</span><span>' +
-      String(e.s).replace(/[&<>]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[ch])) + '</span></div>';
+  const key = req.query.key;
+  const sections = ROOM_CODES.map(code => {
+    const r = rooms[code];
+    const online = socketsInRoom(code).length;
+    const rows = r.log.slice().reverse().map(e => {
+      const time = new Date(e.t).toLocaleTimeString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false });
+      return '<div class="row"><span class="tm">' + time + '</span><span>' + escHtml(e.s) + '</span></div>';
+    }).join('');
+    return '<h2>방 ' + code + ' <span class="on">👥 ' + online + '</span></h2>' +
+      (rows || '<p class="empty">아직 기록이 없어요.</p>');
   }).join('');
   res.send('<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">' +
     '<meta name="viewport" content="width=device-width, initial-scale=1">' +
-    '<meta http-equiv="refresh" content="20"><title>Kedi 게임 기록</title><style>' +
-    'body{font-family:system-ui,sans-serif;background:#FDF3E3;color:#4A342A;max-width:560px;margin:0 auto;padding:18px 14px;}' +
-    'h1{font-size:20px;margin:0 0 4px;}p{font-size:12.5px;color:#8A7362;margin:0 0 14px;line-height:1.5;}' +
+    '<meta http-equiv="refresh" content="20"><title>Kedi 관리자 기록</title><style>' +
+    'body{font-family:system-ui,sans-serif;background:#FDF3E3;color:#4A342A;max-width:620px;margin:0 auto;padding:18px 14px;}' +
+    'h1{font-size:20px;margin:0 0 4px;}h2{font-size:16px;margin:22px 0 8px;border-top:1px solid #EAD9BC;padding-top:14px;}' +
+    '.on{font-size:12px;color:#2E8B7A;font-weight:800;margin-left:6px;}' +
+    'p.top{font-size:12.5px;color:#8A7362;margin:0 0 6px;line-height:1.5;}.empty{font-size:12.5px;color:#8A7362;}' +
     '.row{display:flex;gap:10px;background:#FFF9EE;border:1px solid #EAD9BC;border-radius:10px;padding:7px 10px;margin-bottom:6px;font-size:13px;line-height:1.45;}' +
     '.tm{color:#8A7362;flex:none;font-variant-numeric:tabular-nums;}' +
-    '</style></head><body><h1>🐾 Kedi 게임 기록</h1>' +
-    '<p>최근 기록 (한국시간 · 20초마다 자동 새로고침)<br>무료 서버 특성상 15분간 접속이 없어 서버가 잠들면 기록은 초기화돼요.</p>' +
-    (rows || '<p>아직 기록이 없어요. 게임이 시작되면 여기에 쌓입니다!</p>') +
-    '</body></html>');
+    '</style></head><body><h1>🐾 Kedi 관리자 기록</h1>' +
+    '<p class="top">방별 접속 현황과 기록 (한국시간 · 20초마다 자동 새로고침)<br>무료 서버 특성상 15분간 접속이 없어 서버가 잠들면 기록은 초기화돼요.</p>' +
+    sections + '</body></html>');
 });
-
-function emitOnline() { io.emit('online', { n: io.engine.clientsCount }); }
 
 const N = [];
 function add(x, y, def) { const id = N.length; N.push(Object.assign({ id, x, y, next: [] }, def)); return id; }
@@ -183,8 +190,44 @@ function themedBoard(key) {
   });
 }
 
-let game = freshGame();
-let B = themedBoard('park');
+const ROOM_CODES = (process.env.ROOM_CODES || '0101,0514,3003,7300,5511').split(',').map(s => s.trim()).filter(Boolean);
+const rooms = {};
+function makeRoom(code) {
+  return {
+    code,
+    game: freshGame(),
+    B: themedBoard('park'),
+    paw: freshPaw(),
+    run: freshRun(),
+    log: []
+  };
+}
+ROOM_CODES.forEach(c => { rooms[c] = makeRoom(c); });
+
+// CUR is the active room context. Handlers and timers set it before touching state.
+let CUR = rooms[ROOM_CODES[0]];
+let game = CUR.game, B = CUR.B, paw = CUR.paw, run = CUR.run;
+function setRoom(r) {
+  CUR = r;
+  game = r.game; B = r.B; paw = r.paw; run = r.run;
+}
+// Re-point module aliases to CUR after any reassignment of game/paw/run inside logic.
+function sync() { CUR.game = game; CUR.B = B; CUR.paw = paw; CUR.run = run; }
+// bind: wrap a timer callback so it restores its room context and re-syncs after.
+function bind(r, fn) {
+  return function () {
+    setRoom(r);
+    fn();
+    sync();
+  };
+}
+function socketsInRoom(code) {
+  const out = [];
+  for (const [, s] of io.sockets.sockets) {
+    if (s.data.room === code) out.push(s);
+  }
+  return out;
+}
 
 function freshGame() {
   return { phase: 'lobby', players: [], turn: 0, finishCount: 0, busy: false, timer: null, await: null, map: 'park' };
@@ -214,7 +257,7 @@ function rankingIdx() {
 }
 function youOfKedi(socket) { return game.players.findIndex(p => p.id === socket.data.pid); }
 function emitAll(type, payload) {
-  for (const [, s] of io.sockets.sockets) {
+  for (const s of socketsInRoom(CUR.code)) {
     s.emit(type, Object.assign({}, payload, { state: pub(), you: youOfKedi(s) }));
   }
 }
@@ -338,7 +381,7 @@ function finishSegment(pIdx, dice, cont, walked) {
     const rk = rankingIdx().map((pi, r) => (r + 1) + '위 ' + game.players[pi].name + ' 🍪' + game.players[pi].snacks).join(' · ');
     glog('🏆 Kedi Life 게임 종료! ' + rk);
     clearTimer();
-    game.timer = setTimeout(() => { game.busy = false; broadcastState(); }, animMs);
+    game.timer = setTimeout(bind(CUR, () => { game.busy = false; broadcastState(); }), animMs);
   } else {
     endTurn(animMs);
   }
@@ -356,12 +399,12 @@ function forkSegment(pIdx, dice, cont, walked) {
   const p = game.players[pIdx];
   clearTimer();
   const waitMs = (p.isBot || !p.connected) ? animMs + 1600 * SPEED : animMs + 25000 * SPEED;
-  game.timer = setTimeout(() => {
+  game.timer = setTimeout(bind(CUR, () => {
     if (game.await && game.await.pIdx === pIdx) {
       const opts = game.await.options;
       resumeWalk(pIdx, opts[Math.floor(Math.random() * opts.length)]);
     }
-  }, waitMs);
+  }), waitMs);
 }
 
 function resumeWalk(pIdx, to) {
@@ -393,12 +436,12 @@ function playRoll(p) {
 
 function endTurn(animMs) {
   clearTimer();
-  game.timer = setTimeout(() => {
+  game.timer = setTimeout(bind(CUR, () => {
     game.busy = false;
     if (game.phase !== 'playing') { broadcastState(); return; }
     advance();
     beginTurn();
-  }, animMs);
+  }), animMs);
 }
 
 function advance() {
@@ -425,11 +468,11 @@ function beginTurn() {
   broadcastState();
   clearTimer();
   if (p.isBot || !p.connected) {
-    game.timer = setTimeout(() => playRoll(p), 1600 * SPEED);
+    game.timer = setTimeout(bind(CUR, () => playRoll(p)), 1600 * SPEED);
   } else {
-    game.timer = setTimeout(() => {
+    game.timer = setTimeout(bind(CUR, () => {
       if (game.phase === 'playing' && cur() === p && !game.busy) playRoll(p);
-    }, 45000 * SPEED);
+    }), 45000 * SPEED);
   }
 }
 
@@ -443,7 +486,6 @@ function addBot() {
   });
 }
 
-let paw = freshPaw();
 function freshPaw() {
   return { phase: 'lobby', players: [], round: 0, pointer: 0, scores: [0, 0], picks: [null, null], timer: null, resolving: false };
 }
@@ -461,7 +503,7 @@ function ppPub() {
   };
 }
 function emitAllPP(type, payload) {
-  for (const [, s] of io.sockets.sockets) {
+  for (const s of socketsInRoom(CUR.code)) {
     s.emit(type, Object.assign({}, payload, { state: ppPub(), you: youOfPaw(s) }));
   }
 }
@@ -484,24 +526,24 @@ function pawStartRound() {
   const roundMs = 5800 * (SPEED === 1 ? 1 : 0.15);
   paw.players.forEach((p, i) => {
     if (p.isBot) {
-      setTimeout(() => {
+      setTimeout(bind(CUR, () => {
         if (paw.phase === 'playing' && paw.picks[i] == null && !paw.resolving) {
           paw.picks[i] = Math.floor(Math.random() * 3);
           pawMaybeResolve();
         }
-      }, roundMs * 0.65 + Math.random() * roundMs * 0.2);
+      }), roundMs * 0.65 + Math.random() * roundMs * 0.2);
     }
   });
-  paw.timer = setTimeout(() => {
+  paw.timer = setTimeout(bind(CUR, () => {
     for (let i = 0; i < 2; i++) if (paw.picks[i] == null) paw.picks[i] = Math.floor(Math.random() * 3);
     pawResolve();
-  }, roundMs);
+  }), roundMs);
 }
 
 function pawMaybeResolve() {
   if (paw.picks[0] != null && paw.picks[1] != null && !paw.resolving) {
     pawClearTimer();
-    paw.timer = setTimeout(pawResolve, 400);
+    paw.timer = setTimeout(bind(CUR, pawResolve), 400);
   }
 }
 
@@ -524,11 +566,10 @@ function pawResolve() {
     return;
   }
   paw.pointer = dodger;
-  paw.timer = setTimeout(pawStartRound, 2800 * (SPEED === 1 ? 1 : 0.15));
+  paw.timer = setTimeout(bind(CUR, pawStartRound), 2800 * (SPEED === 1 ? 1 : 0.15));
 }
 
 const RUN_LEN = 100;
-let run = freshRun();
 function freshRun() {
   return { phase: 'lobby', players: [], timer: null, rainUntil: 0, nextRain: 0, finishCount: 0, startAt: 0, fxSeq: 0, fx: [] };
 }
@@ -565,7 +606,7 @@ function runPub() {
   };
 }
 function emitAllRun(type, payload) {
-  for (const [, s] of io.sockets.sockets) {
+  for (const s of socketsInRoom(CUR.code)) {
     s.emit(type, Object.assign({}, payload, { state: runPub(), you: youOfRun(s) }));
   }
 }
@@ -641,11 +682,29 @@ function runTick() {
   runBroadcast();
 }
 
-io.on('connection', (socket) => {
-  emitOnline();
-  socket.emit('board', themedBoard(game.map));
+// Guard: run a room handler only if the socket has entered a valid room.
+function inRoom(socket, fn) {
+  return function (d) {
+    const r = rooms[socket.data.room];
+    if (!r) return;
+    setRoom(r);
+    fn(d);
+    sync();
+  };
+}
+function roomOnline(code) { return socketsInRoom(code).length; }
+function broadcastRoomOnline(code) {
+  for (const s of socketsInRoom(code)) s.emit('online', { n: roomOnline(code) });
+}
 
-  socket.on('hello', (d) => {
+io.on('connection', (socket) => {
+  socket.on('enter', (d) => {
+    const code = String((d && d.room) || '').trim();
+    if (!rooms[code]) return socket.emit('badroom');
+    socket.data.room = code;
+    setRoom(rooms[code]);
+    socket.emit('entered', { room: code });
+    socket.emit('board', themedBoard(game.map));
     const pid = d && d.pid;
     const kp = kediByPid(pid);
     if (kp && !kp.isBot) { socket.data.pid = pid; kp.connected = true; }
@@ -656,10 +715,47 @@ io.on('connection', (socket) => {
     socket.emit('state', { state: pub(), you: youOfKedi(socket) });
     socket.emit('pp_state', { state: ppPub(), you: youOfPaw(socket) });
     socket.emit('run_state', { state: runPub(), you: youOfRun(socket) });
-    emitOnline();
+    broadcastRoomOnline(code);
+    sync();
   });
 
-  socket.on('join', (d) => {
+  socket.on('admin', (d) => {
+    const KEY = process.env.ADMIN_KEY;
+    if (!KEY || String((d && d.key) || '') !== KEY) return socket.emit('admin_denied');
+    const overview = ROOM_CODES.map(code => {
+      const r = rooms[code];
+      const humans = [];
+      for (const s of socketsInRoom(code)) {
+        const nm = (r.game.players.find(p => p.id === s.data.pid) ||
+                    r.paw.players.find(p => p.id === s.data.pid) ||
+                    r.run.players.find(p => p.id === s.data.pid));
+        humans.push(nm ? nm.name + ' (' + nm.cat + ')' : 'browsing');
+      }
+      let active = 'idle';
+      if (r.game.phase !== 'lobby') active = 'Kedi Life';
+      else if (r.paw.phase !== 'lobby') active = 'Paw Paw Paw';
+      else if (r.run.phase !== 'lobby') active = 'Kedi Running';
+      return {
+        code, online: socketsInRoom(code).length, active,
+        people: humans,
+        kedi: r.game.players.length, paw: r.paw.players.length, run: r.run.players.length,
+        log: r.log.slice(-40).reverse().map(e => ({
+          time: new Date(e.t).toLocaleTimeString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false }),
+          s: e.s
+        }))
+      };
+    });
+    socket.emit('admin_ok', { rooms: overview });
+  });
+
+  socket.on('hello', inRoom(socket, (d) => {
+    socket.emit('state', { state: pub(), you: youOfKedi(socket) });
+    socket.emit('pp_state', { state: ppPub(), you: youOfPaw(socket) });
+    socket.emit('run_state', { state: runPub(), you: youOfRun(socket) });
+    broadcastRoomOnline(socket.data.room);
+  }));
+
+  socket.on('join', inRoom(socket, (d) => {
     if (game.phase !== 'lobby') return socket.emit('errmsg', 'A game is running — you can watch, then join next round!');
     if (game.players.length >= 4) return socket.emit('errmsg', 'The lobby is full (4 Kedi max).');
     if (socket.data.pid && pawByPid(socket.data.pid)) return socket.emit('errmsg', 'Finish your Paw game first! 🐾');
@@ -677,9 +773,9 @@ io.on('connection', (socket) => {
     socket.emit('joined', { pid: p.id });
     glog('👋 ' + name + ' (' + cat + ') joined Kedi Life');
     broadcastState();
-  });
+  }));
 
-  socket.on('leave', () => {
+  socket.on('leave', inRoom(socket, () => {
     const p = kediByPid(socket.data.pid);
     if (!p) return;
     socket.data.pid = null;
@@ -691,40 +787,40 @@ io.on('connection', (socket) => {
       glog('🚪 ' + p.name + ' left Kedi Life — a bot takes over');
       if (game.players.every(q => q.isBot)) {
         clearTimer();
-        game = freshGame();
+        game = freshGame(); sync();
         glog('🧹 Kedi Life 초기화 (모두 나감)');
       } else if (game.phase === 'playing') {
         const pIdx = game.players.indexOf(p);
         if (game.await && game.await.pIdx === pIdx) {
           clearTimer();
-          game.timer = setTimeout(() => {
+          game.timer = setTimeout(bind(CUR, () => {
             if (game.await && game.await.pIdx === pIdx) {
               const o = game.await.options;
               resumeWalk(pIdx, o[Math.floor(Math.random() * o.length)]);
             }
-          }, 1500 * SPEED);
+          }), 1500 * SPEED);
         } else if (cur() === p && !game.busy) {
           clearTimer();
-          game.timer = setTimeout(() => playRoll(p), 1400 * SPEED);
+          game.timer = setTimeout(bind(CUR, () => playRoll(p)), 1400 * SPEED);
         }
       }
     }
     broadcastState();
-  });
+  }));
 
-  socket.on('setmap', (d) => {
+  socket.on('setmap', inRoom(socket, (d) => {
     if (game.phase !== 'lobby') return;
     if (!kediByPid(socket.data.pid)) return;
     const key = d && d.map;
     if (!MAPS[key] || game.map === key) return;
     game.map = key;
-    B = themedBoard(key);
+    B = themedBoard(key); sync();
     glog('🗺️ Kedi Life 맵 변경 → ' + MAPS[key].name);
     io.emit('board', B);
     broadcastState();
-  });
+  }));
 
-  socket.on('start', () => {
+  socket.on('start', inRoom(socket, () => {
     if (game.phase !== 'lobby' || game.players.length < 1) return;
     const p = kediByPid(socket.data.pid);
     if (!p) return;
@@ -736,14 +832,14 @@ io.on('connection', (socket) => {
     glog('🚩 Kedi Life 시작! ' + game.players.map(q => q.name + (q.isBot ? '(bot)' : '')).join(' vs '));
     broadcastState();
     beginTurn();
-  });
+  }));
 
-  socket.on('roll', () => {
+  socket.on('roll', inRoom(socket, () => {
     const p = kediByPid(socket.data.pid);
     if (p) playRoll(p);
-  });
+  }));
 
-  socket.on('choice', (d) => {
+  socket.on('choice', inRoom(socket, (d) => {
     const p = kediByPid(socket.data.pid);
     if (!p || !game.await) return;
     const pIdx = game.players.indexOf(p);
@@ -751,24 +847,23 @@ io.on('connection', (socket) => {
     const to = d && d.to;
     if (!game.await.options.includes(to)) return;
     resumeWalk(pIdx, to);
-  });
+  }));
 
-  socket.on('again', () => {
+  socket.on('again', inRoom(socket, () => {
     if (game.phase !== 'over') return;
     clearTimer();
     const humans = game.players.filter(p => !p.isBot && p.connected);
     const keepMap = game.map;
-    game = freshGame();
-    game.map = keepMap;
+    game = freshGame(); game.map = keepMap; sync();
     for (const p of humans) {
       p.pos = START; p.snacks = 0; p.skip = 0; p.finished = false; p.finishOrder = 0;
       game.players.push(p);
     }
     glog('🔄 Kedi Life 다시 하기');
     broadcastState();
-  });
+  }));
 
-  socket.on('pp_join', (d) => {
+  socket.on('pp_join', inRoom(socket, (d) => {
     if (paw.phase !== 'lobby') return socket.emit('errmsg', 'A Paw game is running — watch this one!');
     if (paw.players.length >= 2) return socket.emit('errmsg', 'Paw Paw Paw is 1 vs 1 — seats are full!');
     if (socket.data.pid && kediByPid(socket.data.pid)) return socket.emit('errmsg', 'Finish your Kedi Life game first! 🎲');
@@ -783,9 +878,9 @@ io.on('connection', (socket) => {
     socket.emit('joined', { pid: p.id });
     glog('👋 ' + name + ' (' + cat + ') joined Paw Paw Paw');
     ppBroadcast();
-  });
+  }));
 
-  socket.on('pp_leave', () => {
+  socket.on('pp_leave', inRoom(socket, () => {
     const p = pawByPid(socket.data.pid);
     if (!p) return;
     socket.data.pid = null;
@@ -797,7 +892,7 @@ io.on('connection', (socket) => {
       glog('🚪 ' + p.name + ' left Paw Paw Paw — a bot takes over');
       if (paw.players.every(q => q.isBot)) {
         pawClearTimer();
-        paw = freshPaw();
+        paw = freshPaw(); sync();
         glog('🧹 Paw Paw Paw 초기화 (모두 나감)');
       } else if (paw.phase === 'playing' && !paw.resolving) {
         const i = paw.players.indexOf(p);
@@ -808,9 +903,9 @@ io.on('connection', (socket) => {
       }
     }
     ppBroadcast();
-  });
+  }));
 
-  socket.on('pp_start', () => {
+  socket.on('pp_start', inRoom(socket, () => {
     if (paw.phase !== 'lobby' || paw.players.length < 1) return;
     if (!pawByPid(socket.data.pid)) return;
     if (paw.players.length === 1) addPawBot();
@@ -820,10 +915,10 @@ io.on('connection', (socket) => {
     paw.pointer = Math.floor(Math.random() * 2);
     glog('🚩 Paw Paw Paw 시작! ' + paw.players.map(q => q.name + (q.isBot ? '(bot)' : '')).join(' vs '));
     ppBroadcast();
-    paw.timer = setTimeout(pawStartRound, 1500 * (SPEED === 1 ? 1 : 0.2));
-  });
+    paw.timer = setTimeout(bind(CUR, pawStartRound), 1500 * (SPEED === 1 ? 1 : 0.2));
+  }));
 
-  socket.on('pp_pick', (d) => {
+  socket.on('pp_pick', inRoom(socket, (d) => {
     if (paw.phase !== 'playing' || paw.resolving) return;
     const i = paw.players.findIndex(p => p.id === socket.data.pid);
     if (i < 0 || paw.picks[i] != null) return;
@@ -831,19 +926,18 @@ io.on('connection', (socket) => {
     if (![0, 1, 2].includes(dir)) return;
     paw.picks[i] = dir;
     pawMaybeResolve();
-  });
+  }));
 
-  socket.on('pp_again', () => {
+  socket.on('pp_again', inRoom(socket, () => {
     if (paw.phase !== 'over') return;
     pawClearTimer();
     const humans = paw.players.filter(p => !p.isBot && p.connected);
-    paw = freshPaw();
-    paw.players = humans;
+    paw = freshPaw(); paw.players = humans; sync();
     glog('🔄 Paw Paw Paw 다시 하기');
     ppBroadcast();
-  });
+  }));
 
-  socket.on('run_join', (d) => {
+  socket.on('run_join', inRoom(socket, (d) => {
     if (run.phase !== 'lobby') return socket.emit('errmsg', 'A race is running — watch this one!');
     if (run.players.length >= 4) return socket.emit('errmsg', 'The race is full (4 Kedi max).');
     if (socket.data.pid && kediByPid(socket.data.pid)) return socket.emit('errmsg', 'Finish your Kedi Life game first! 🎲');
@@ -858,9 +952,9 @@ io.on('connection', (socket) => {
     socket.emit('joined', { pid: p.id });
     glog('👋 ' + name + ' (' + cat + ') joined Kedi Running');
     runBroadcast();
-  });
+  }));
 
-  socket.on('run_leave', () => {
+  socket.on('run_leave', inRoom(socket, () => {
     const p = runByPid(socket.data.pid);
     if (!p) return;
     socket.data.pid = null;
@@ -872,14 +966,14 @@ io.on('connection', (socket) => {
       glog('🚪 ' + p.name + ' left the race — a bot takes over');
       if (run.players.every(q => q.isBot)) {
         if (run.timer) { clearInterval(run.timer); run.timer = null; }
-        run = freshRun();
+        run = freshRun(); sync();
         glog('🧹 Kedi Running 초기화 (모두 나감)');
       }
     }
     runBroadcast();
-  });
+  }));
 
-  socket.on('run_start', () => {
+  socket.on('run_start', inRoom(socket, () => {
     if (run.phase !== 'lobby' || run.players.length < 1) return;
     if (!runByPid(socket.data.pid)) return;
     if (run.players.length === 1) addRunBot();
@@ -890,41 +984,44 @@ io.on('connection', (socket) => {
     run.players.forEach(p => { p.pos = 0; p.energy = 0; p.finished = false; p.finishOrder = 0; p.slowUntil = 0; p.boostUntil = 0; });
     glog('🚩 Kedi Running 시작! ' + run.players.map(q => q.name + (q.isBot ? '(bot)' : '')).join(' vs '));
     runBroadcast();
-    run.timer = setInterval(runTick, 120);
-  });
+    run.timer = setInterval(bind(CUR, runTick), 120);
+  }));
 
-  socket.on('run_tap', () => {
+  socket.on('run_tap', inRoom(socket, () => {
     if (run.phase !== 'playing') return;
     const p = runByPid(socket.data.pid);
     if (!p || p.finished) return;
     if (Date.now() < run.rainUntil) return;
     p.energy = Math.min(6, (p.energy || 0) + 0.9);
-  });
+  }));
 
-  socket.on('run_item', (d) => {
+  socket.on('run_item', inRoom(socket, (d) => {
     if (run.phase !== 'playing') return;
     const p = runByPid(socket.data.pid);
     if (!p || p.finished) return;
     const kind = d && d.kind;
     if (!['cheer', 'snack', 'water'].includes(kind)) return;
     runUseItem(run.players.indexOf(p), kind);
-  });
+  }));
 
-  socket.on('run_again', () => {
+  socket.on('run_again', inRoom(socket, () => {
     if (run.phase !== 'over') return;
     if (run.timer) { clearInterval(run.timer); run.timer = null; }
     const humans = run.players.filter(p => !p.isBot && p.connected);
-    run = freshRun();
+    run = freshRun(); sync();
     for (const p of humans) {
       p.pos = 0; p.energy = 0; p.finished = false; p.finishOrder = 0; p.slowUntil = 0; p.boostUntil = 0;
       run.players.push(p);
     }
     glog('🔄 Kedi Running 다시 하기');
     runBroadcast();
-  });
+  }));
 
   socket.on('disconnect', () => {
-    emitOnline();
+    const code = socket.data.room;
+    const r = rooms[code];
+    if (!r) return;
+    setRoom(r);
     const pid = socket.data.pid;
     const p = kediByPid(pid);
     if (p) {
@@ -933,7 +1030,7 @@ io.on('connection', (socket) => {
         game.players = game.players.filter(q => q !== p);
       } else if (game.players.every(q => q.isBot || !q.connected)) {
         clearTimer();
-        game = freshGame();
+        game = freshGame(); sync();
         glog('🧹 Kedi Life 초기화 (모두 나감)');
       }
       broadcastState();
@@ -945,7 +1042,7 @@ io.on('connection', (socket) => {
         paw.players = paw.players.filter(q => q !== pp);
       } else if (paw.players.every(q => q.isBot || !q.connected)) {
         pawClearTimer();
-        paw = freshPaw();
+        paw = freshPaw(); sync();
         glog('🧹 Paw Paw Paw 초기화 (모두 나감)');
       }
       ppBroadcast();
@@ -957,11 +1054,13 @@ io.on('connection', (socket) => {
         run.players = run.players.filter(q => q !== rp);
       } else if (run.players.every(q => q.isBot || !q.connected)) {
         if (run.timer) { clearInterval(run.timer); run.timer = null; }
-        run = freshRun();
+        run = freshRun(); sync();
         glog('🧹 Kedi Running 초기화 (모두 나감)');
       }
       runBroadcast();
     }
+    broadcastRoomOnline(code);
+    sync();
   });
 });
 
