@@ -1,0 +1,16 @@
+{
+  "name": "kedi-life",
+  "version": "1.0.0",
+  "description": "A cozy multiplayer Kedi board game for 2-4 friends",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5"
+  }
+}
