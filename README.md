@@ -22,7 +22,7 @@ Cozy cat mini-games to play with friends. Open the link, pick your Kedi, choose 
 - **Paw Paw Paw!** 🐾 — A 1 vs 1 reflex duel. On "3·2·1, Paw!" both players pick left / center / right at the same time. Matching directions scores a point for the paw — first to 3 wins. Playing solo? You duel a bot.
 - **Kedi Running** 🏃 — A sprint race for 2–4. Tap left·right fast (arrow keys on PC), cheer yourself, tempt rivals with snacks, splash water — and take cover when it rains!
 
-**Rooms**: on open, enter a 4-digit room code. Each room is fully isolated (games, players, logs). Default codes: `0101 / 0514 / 3003 / 7300 / 5511` (override with the `ROOM_CODES` env var).
+**Rooms**: on open, enter a 4-digit room code. Each room is fully isolated (games, players, logs).
 
 **Admin**: the ⚙️ button on the first screen opens an admin panel (needs the `ADMIN_KEY` env var) showing every room's live players and per-room log. Also available at `/log?key=YOUR_ADMIN_KEY`.
 
