@@ -9,7 +9,6 @@
 
 **방(Room)**: 접속하면 4자리 방 번호를 입력해 입장해요. 방마다 게임·접속자·기록이 완전히 분리돼요.
 
-**관리자**: 첫 화면 ⚙️ 버튼 → 관리자 키 입력 시 모든 방의 실시간 접속 현황과 방별 기록을 볼 수 있어요. 키는 환경변수 `ADMIN_KEY`로 설정. `/log?key=관리자키` 주소로도 열람 가능.
 
 ---
 
@@ -24,7 +23,6 @@ Cozy cat mini-games to play with friends. Open the link, pick your Kedi, choose 
 
 **Rooms**: on open, enter a 4-digit room code. Each room is fully isolated (games, players, logs).
 
-**Admin**: the ⚙️ button on the first screen opens an admin panel (needs the `ADMIN_KEY` env var) showing every room's live players and per-room log. Also available at `/log?key=YOUR_ADMIN_KEY`.
 
 ---
 
