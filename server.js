@@ -202,16 +202,16 @@ const SP_ROLE_INFO = { prep: '🔪', chef: '🥄', server: '🛎️', cleaner: '
 const SP_DAY = 240000;
 const SP_ACT = 1500;
 const SP_EAT = 8000;
-const SP_PATIENCE = 60000;
+const SP_PATIENCE = 90000;
 const SP_TICK = Math.max(30, Math.round(250 * SC));
-const SP_TABLES = [{ x: 62, y: 78 }, { x: 152, y: 78 }, { x: 242, y: 78 }, { x: 330, y: 78 }];
-const SP_TOGO = { x: 330, y: 168 };
-const SP_REG = { x: 36, y: 168 };
-const SP_DOOR = { x: 190, y: 6 };
-const SP_COUNTER = { x: 183, y: 168 };
-const SP_POTS = [{ x: 92, y: 258, type: 'meat' }, { x: 183, y: 258, type: 'tomato' }, { x: 274, y: 258, type: 'potato' }];
-const SP_BOARD = { x: 66, y: 352 };
-const SP_BINS = [{ x: 170, y: 352, type: 'meat' }, { x: 240, y: 352, type: 'potato' }, { x: 305, y: 352, type: 'tomato' }];
+const SP_TABLES = [{ x: 52, y: 95 }, { x: 138, y: 95 }, { x: 224, y: 95 }, { x: 310, y: 95 }];
+const SP_TOGO = { x: 326, y: 180 };
+const SP_REG = { x: 34, y: 180 };
+const SP_DOOR = { x: 180, y: 10 };
+const SP_COUNTER = { x: 180, y: 180 };
+const SP_POTS = [{ x: 92, y: 268, type: 'meat' }, { x: 180, y: 268, type: 'tomato' }, { x: 268, y: 268, type: 'potato' }];
+const SP_BOARD = { x: 64, y: 366 };
+const SP_BINS = [{ x: 168, y: 366, type: 'meat' }, { x: 236, y: 366, type: 'potato' }, { x: 304, y: 366, type: 'tomato' }];
 const SP_RANGE = 52;
 const SP_BOTSPD = 150;
 
@@ -302,7 +302,7 @@ function spActionFor(p) {
       return { t: 'chop' };
     } else if (p.carry.kind === 'chopped') {
       const pi = SP_POTS.findIndex(pt => pt.type === p.carry.ing && spDist(p, pt) < SP_RANGE);
-      if (pi >= 0 && soup.pots[pi].ing < 3 && soup.pots[pi].cook === 0 && soup.pots[pi].servings === 0) return { t: 'deposit', pot: pi };
+      if (pi >= 0 && soup.pots[pi].ing < 1 && soup.pots[pi].cook === 0 && soup.pots[pi].servings === 0) return { t: 'deposit', pot: pi };
     }
   } else if (p.role === 'chef') {
     if (!p.carry) {
@@ -348,9 +348,9 @@ function spDoAction(p) {
     else if (act.t === 'chop') { if (p.carry && p.carry.kind === 'raw') { p.carry = { kind: 'chopped', ing: p.carry.ing }; spFx('chop'); } }
     else if (act.t === 'deposit') {
       const pot = soup.pots[act.pot];
-      if (p.carry && p.carry.kind === 'chopped' && pot.ing < 3 && pot.cook === 0 && pot.servings === 0) {
+      if (p.carry && p.carry.kind === 'chopped' && pot.ing < 1 && pot.cook === 0 && pot.servings === 0) {
         pot.ing++; p.carry = null;
-        if (pot.ing === 3) { pot.cook = 1; spFx('cookstart'); glog('🍲 Soup · ' + pot.type + ' 냄비 조리 시작'); }
+        pot.cook = 1; spFx('cookstart'); glog('🍲 Soup · ' + pot.type + ' 냄비 조리 시작');
       }
     }
     else if (act.t === 'stir') { soup.pots[act.pot].boost = Date.now() + 4000 * SC; spFx('stir'); }
@@ -401,11 +401,10 @@ function spBotTargetFor(p) {
       const need = spDemand();
       const best = SOUPS.filter(s => {
         const pot = soup.pots.find(pt => pt.type === s);
-        return need[s] > 0 && pot.ing < 3 && pot.cook === 0 && pot.servings === 0;
+        return need[s] > 0 && pot.ing < 1 && pot.cook === 0 && pot.servings === 0;
       }).sort((a, b) => need[b] - need[a])[0];
       if (best) return SP_BINS.find(b => b.type === best);
-      const fill = soup.pots.find(pt => pt.ing > 0 && pt.ing < 3 && pt.cook === 0);
-      if (fill) return SP_BINS.find(b => b.type === fill.type);
+
       return null;
     }
     if (p.carry.kind === 'raw') return SP_BOARD;
@@ -480,8 +479,8 @@ function spTick() {
   const dt = SP_TICK / 1000 / SC;
   const m = spMinutes();
   if (m >= 960) { spEndDay(); return; }
-  if (m < 940) {
-    const p = spRush() ? 0.08 : 0.024;
+  if (m >= 615 && m < 940) {
+    const p = spRush() ? 0.16 : 0.046;
     if (Math.random() < p * (SP_TICK / (250 * SC))) spSpawnCustomer();
   }
   soup.pots.forEach(pt => {
