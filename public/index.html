@@ -413,6 +413,92 @@
   }
   .runitem:disabled{opacity:.45;}
   .runitem .cd{display:block; font-size:11px; color:var(--ink-soft); min-height:13px;}
+  #sphud{display:flex; gap:9px; align-items:center; margin-bottom:8px; font-weight:800; font-size:13.5px; flex-wrap:wrap;}
+  #sphud .clock{font-family:'Fredoka',sans-serif; font-size:17px;}
+  #sphud .rushb{display:none; background:#FFD1C2; color:#A33326; border-radius:99px; padding:2px 10px; font-size:11.5px;}
+  #sphud .rushb.on{display:inline-block; animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+  #spfield{
+    position:relative; background:#F6E7C8;
+    border:4px solid #C79B5B; border-radius:20px; overflow:hidden;
+    touch-action:none; user-select:none; -webkit-user-select:none;
+  }
+  .spst{position:absolute; transform:translate(-50%,-50%); text-align:center; z-index:1;}
+  .spst .lbl{font-size:9px; font-weight:800; color:#8F6A42; display:block; margin-top:1px;}
+  .sp-table{width:50px; height:36px; background:#B98A5A; border:2px solid #8F6A42; border-radius:9px;}
+  .sp-counter{
+    width:150px; height:34px; background:#E7CFA3; border:2px solid #C79B5B; border-radius:10px;
+    display:flex; gap:3px; align-items:center; justify-content:center; font-size:15px;
+  }
+  .sp-pot{
+    width:56px; background:#FFF3DD; border:2px solid #C79B5B; border-radius:12px;
+    padding:3px 2px 4px; font-size:14px; line-height:1.15;
+  }
+  .sp-pot .pbarw{height:5px; background:#EFE3CC; border-radius:99px; margin:2px 4px 0; overflow:hidden;}
+  .sp-pot .pbarw i{display:block; height:100%; background:var(--teal); border-radius:99px;}
+  .sp-pot .dots{font-size:8px; letter-spacing:1px; color:#C79B5B;}
+  .sp-pot .dots b{color:var(--accent-deep);}
+  .sp-simple{
+    background:#FFF3DD; border:2px solid #C79B5B; border-radius:11px;
+    padding:4px 7px; font-size:17px; line-height:1.1;
+  }
+  .sp-cust{position:absolute; transform:translate(-50%,-50%); width:32px; z-index:3; transition:left .3s linear, top .3s linear;}
+  .sp-cust svg{width:32px; height:32px;}
+  .sp-cust .bub{
+    position:absolute; top:-22px; left:50%; transform:translateX(-50%);
+    background:#fff; border:2px solid var(--line); border-radius:9px;
+    padding:0 4px; font-size:12px; white-space:nowrap; line-height:1.4;
+  }
+  .sp-cust .cpb{height:3.5px; background:#EFE3CC; border-radius:99px; margin-top:1px; overflow:hidden;}
+  .sp-cust .cpb i{display:block; height:100%; background:var(--grass-deep);}
+  .sp-cust .cpb i.low{background:var(--danger);}
+  .sp-player{position:absolute; transform:translate(-50%,-50%); width:40px; z-index:5;}
+  .sp-player.other{transition:left .28s linear, top .28s linear;}
+  .sp-player svg{width:40px; height:40px; filter:drop-shadow(0 2px 1px #00000022);}
+  .sp-player .rb{
+    position:absolute; bottom:-4px; right:-7px; font-size:12px;
+    background:#FFF9EEE6; border-radius:99px; padding:0 2px;
+  }
+  .sp-player .cy{position:absolute; top:-13px; right:-9px; font-size:13px;}
+  .sp-player .nm{
+    position:absolute; bottom:-13px; left:50%; transform:translateX(-50%);
+    font-size:8.5px; font-weight:800; color:#8F6A42; white-space:nowrap;
+  }
+  .sp-player .bb{position:absolute; top:-7px; left:2px; right:2px; height:4.5px; background:#EFE3CC; border-radius:99px; overflow:hidden; display:none;}
+  .sp-player .bb i{display:block; height:100%; width:100%; background:var(--accent);}
+  .sp-player.busy .bb{display:block;}
+  #spctrl{display:flex; gap:10px; margin-top:10px; align-items:stretch;}
+  #joy{
+    position:relative; width:106px; height:106px; flex:none;
+    background:var(--card); border:2.5px solid var(--line); border-radius:50%;
+    touch-action:none;
+  }
+  #joyk{
+    position:absolute; width:42px; height:42px; border-radius:50%;
+    background:var(--accent); box-shadow:0 2px 0 var(--accent-deep);
+    left:32px; top:32px; pointer-events:none;
+  }
+  #spactwrap{flex:1; display:flex; flex-direction:column; gap:7px;}
+  #spact{
+    flex:1; border:none; cursor:pointer; font-family:'Fredoka',sans-serif; font-size:17px;
+    color:#fff; background:var(--accent); border-radius:16px;
+    box-shadow:0 4px 0 var(--accent-deep); padding:10px;
+    touch-action:manipulation;
+  }
+  #spact:active{transform:translateY(2px); box-shadow:0 2px 0 var(--accent-deep);}
+  #spact:disabled{opacity:.45; box-shadow:none; background:#B9A98F;}
+  #spstatus{font-size:11.5px; font-weight:800; color:var(--ink-soft); text-align:center; min-height:14px;}
+  .rolecard{
+    background:var(--card); border:2.5px solid var(--line); border-radius:16px;
+    padding:10px 8px; text-align:center; cursor:pointer; position:relative;
+  }
+  .rolecard .ri{font-size:24px;}
+  .rolecard .rn2{font-family:'Fredoka',sans-serif; font-size:14px; margin-top:1px;}
+  .rolecard .rd{font-size:10.5px; color:var(--ink-soft); margin-top:2px; line-height:1.35;}
+  .rolecard .rt{font-size:10.5px; font-weight:800; margin-top:4px; color:var(--teal); min-height:13px;}
+  .rolecard.mine{border-color:var(--accent); background:#FFF3E2;}
+  .rolecard.locked{opacity:.45; cursor:default;}
+  #spRoles{display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-bottom:12px;}
   .lobbytip{
     display:flex; gap:10px; align-items:flex-start;
     background:#E7F3EF; border:2px solid #BBDCD2; border-radius:14px;
@@ -482,6 +568,11 @@
       <div class="gt">🏃 Kedi Running</div>
       <div class="gd">Sprint race for 2–4 Kedi! Tap left·right fast (arrow keys on PC). Cheer yourself, tempt rivals with snacks, splash water — and hide when it rains.</div>
       <span class="gs" id="runStatus">Empty — be the first!</span>
+    </div>
+    <div class="game-card" id="cardSoup">
+      <div class="gt">🍲 Kedi Soup</div>
+      <div class="gd">Run a soup shop together! Chop, stir, serve and keep every customer happy from 10:00 to 16:00. 1–4 cooks, bots cover the rest.</div>
+      <span class="gs" id="soupStatus">Empty — be the first!</span>
     </div>
   </section>
 
@@ -559,6 +650,37 @@
     <div class="plist" id="runLobbyList"></div>
     <button class="btn ghost" id="runCopyBtn" style="margin-bottom:10px;">Copy invite link</button>
     <button class="btn" id="runStartBtn">Start race</button>
+  </section>
+
+  <section class="screen" id="scr-splobby">
+    <button class="backlink" id="spBack">‹ Back to games</button>
+    <h2>Kedi Soup · pick your role</h2>
+    <div class="lobbytip">
+      <span>🍲</span>
+      <span><b>How it works:</b> customers order meat 🥩, tomato 🍅 or potato 🥔 soup. Prep chops, Chef stirs and pours, the hall team serves and cleans. Empty roles are covered by bots — with 2 or fewer cooks, humans take the kitchen!</span>
+    </div>
+    <div id="spRoles"></div>
+    <div class="plist" id="spLobbyList"></div>
+    <button class="btn ghost" id="spCopyBtn" style="margin-bottom:10px;">Copy invite link</button>
+    <button class="btn" id="spStartBtn">Open the shop!</button>
+  </section>
+
+  <section class="screen" id="scr-spgame">
+    <button class="backlink" id="spWatchBack">‹ Back to games</button>
+    <div id="sphud">
+      <span class="clock" id="spClock">10:00</span>
+      <span class="rushb" id="spRush">🔥 LUNCH RUSH</span>
+      <span id="spSold">🍲 0</span>
+      <span id="spMissed">😿 0</span>
+    </div>
+    <div id="spfield"></div>
+    <div id="spctrl">
+      <div id="joy"><div id="joyk"></div></div>
+      <div id="spactwrap">
+        <button id="spact" disabled>…</button>
+        <div id="spstatus"></div>
+      </div>
+    </div>
   </section>
 
   <section class="screen" id="scr-rungame">
@@ -641,6 +763,24 @@ var CHOICE = null;
 var WATCH = null;
 var ppPicked = false, ppRoundOn = false, ppBarTimer = null;
 var RUNS = null, RYOU = -1, runLastFx = 0, runNextSide = 0, runLastTap = 0, runLaneCount = -1, runPrevPhase = '';
+var SPS = null, SPYOU = -1, spLastFx = 0;
+var spPos = { x: 180, y: 230 }, spVel = { x: 0, y: 0 }, spKeys = {}, spTarget = null;
+var spBusyLocal = 0, spLastSent = 0, spRafOn = false, spBuilt = false, spCustEls = {}, spPlayerEls = {};
+var SPC = {
+  W: 360, H: 430, RANGE: 52,
+  TABLES: [{x:62,y:78},{x:152,y:78},{x:242,y:78},{x:330,y:78}],
+  TOGO: {x:330,y:168}, REG: {x:36,y:168}, DOOR: {x:190,y:6}, COUNTER: {x:183,y:168},
+  POTS: [{x:92,y:258,type:'meat'},{x:183,y:258,type:'tomato'},{x:274,y:258,type:'potato'}],
+  BOARD: {x:66,y:352},
+  BINS: [{x:170,y:352,type:'meat'},{x:240,y:352,type:'potato'},{x:305,y:352,type:'tomato'}]
+};
+var SP_ICON = { meat: '🥩', tomato: '🍅', potato: '🥔' };
+var SP_ROLE_C = [
+  ['prep','🔪','Prep','Chop & carry ingredients'],
+  ['chef','🥄','Chef','Stir pots & pour bowls'],
+  ['server','🛎️','Server','Take orders & serve'],
+  ['cleaner','🧹','Cleaner','Clean tables & register']
+];
 var THEME_STYLE = {
   park: { board: '#8FBF7F', border: '#6EA05F', ribbon: '#FFFFFF88' },
   alley: { board: '#4A4E69', border: '#393C55', ribbon: '#FFD97355' },
@@ -772,7 +912,7 @@ function toast(msg){
 }
 
 function show(scr){
-  ['scr-room','scr-admin','scr-char','scr-menu','scr-lobby','scr-game','scr-pplobby','scr-ppgame','scr-runlobby','scr-rungame'].forEach(function(s){
+  ['scr-room','scr-admin','scr-char','scr-menu','scr-lobby','scr-game','scr-pplobby','scr-ppgame','scr-runlobby','scr-rungame','scr-splobby','scr-spgame'].forEach(function(s){
     $(s).classList.toggle('on', s === scr);
   });
 }
@@ -808,6 +948,17 @@ function route(){
   if (WATCH === 'run' && RUNS && RUNS.phase !== 'lobby'){
     renderRunGame();
     if (RUNS.phase === 'over') renderRunOver();
+    return;
+  }
+  if (SPS && SPYOU >= 0){
+    if (SPS.phase === 'lobby') renderSpLobby();
+    else { renderSpGame(); if (SPS.phase === 'over') renderSpOver(); }
+    return;
+  }
+  if (WATCH === 'soup' && SPS){
+    if (SPS.phase === 'lobby'){ renderSpLobby(); return; }
+    renderSpGame();
+    if (SPS.phase === 'over') renderSpOver();
     return;
   }
   WATCH = null;
@@ -866,6 +1017,19 @@ function renderMenu(){
     }
   }
   updateRunCard();
+  updateSoupCard();
+}
+
+function updateSoupCard(){
+  var el = $('soupStatus');
+  if (!SPS || !el) return;
+  if (SPS.phase === 'lobby'){
+    el.textContent = SPS.players.length === 0 ? 'Empty — be the first!' : SPS.players.length + '/4 in the kitchen — join!';
+    el.className = 'gs';
+  } else {
+    el.textContent = 'Shop is open — tap to watch';
+    el.className = 'gs busy';
+  }
 }
 
 function updateRunCard(){
@@ -1634,6 +1798,455 @@ $('cardRun').onclick = function(){
   socket.emit('run_join', { name: id.name, cat: id.cat });
 };
 
+function spPct(el, x, y){ el.style.left = (x / SPC.W * 100) + '%'; el.style.top = (y / SPC.H * 100) + '%'; }
+function spD(a, b){ return Math.hypot(a.x - b.x, a.y - b.y); }
+function spClock(t){
+  var h = Math.floor(t / 60), m = t % 60;
+  return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+}
+
+function renderSpLobby(){
+  show('scr-splobby');
+  $('overOverlay').classList.remove('on');
+  var humans = SPS.players.filter(function(p){ return !p.isBot; }).length;
+  var wouldBe = SPYOU >= 0 ? humans : humans + 1;
+  var hallLocked = wouldBe <= 2;
+  var g = $('spRoles');
+  g.innerHTML = '';
+  SP_ROLE_C.forEach(function(rc){
+    var key = rc[0];
+    var taken = SPS.players.find(function(p){ return p.role === key; });
+    var mine = SPYOU >= 0 && SPS.players[SPYOU] && SPS.players[SPYOU].role === key;
+    var locked = hallLocked && key !== 'prep' && key !== 'chef';
+    var d = document.createElement('div');
+    d.className = 'rolecard' + (mine ? ' mine' : '') + (locked && !taken ? ' locked' : '');
+    d.innerHTML = '<div class="ri">' + rc[1] + '</div><div class="rn2">' + rc[2] + '</div>' +
+      '<div class="rd">' + rc[3] + '</div>' +
+      '<div class="rt">' + (taken ? esc(taken.name) + (mine ? ' (you)' : '') : (locked ? '🤖 bot-run' : 'Open!')) + '</div>';
+    d.onclick = function(){
+      if (mine) return;
+      if (taken) return toast('That role is taken!');
+      if (locked) return toast('With 2 or fewer cooks, humans take the kitchen — the hall runs on bots!');
+      SFX.tap();
+      var id = ident();
+      if (SPYOU >= 0) socket.emit('sp_role', { role: key });
+      else socket.emit('sp_join', { name: id.name, cat: id.cat, role: key });
+    };
+    g.appendChild(d);
+  });
+  var list = $('spLobbyList');
+  list.innerHTML = '';
+  SPS.players.forEach(function(p, i){
+    var d = document.createElement('div');
+    d.className = 'prow';
+    d.innerHTML = catSVG(p.cat) + '<span class="pn">' + esc(p.name) + ' ' +
+      (SP_ROLE_C.find(function(rc){ return rc[0] === p.role; }) || ['','?'])[1] + '</span>' +
+      (i === SPYOU ? '<span class="pill me">you</span>' : '') +
+      (p.isBot ? '<span class="pill">bot</span>' : '');
+    list.appendChild(d);
+  });
+  if (!SPS.players.length){
+    var e = document.createElement('div');
+    e.className = 'prow';
+    e.style.opacity = '.5';
+    e.innerHTML = '<span style="width:34px;text-align:center;font-size:20px;">💭</span><span class="pn" style="color:var(--ink-soft)">Pick a role above to join!</span>';
+    list.appendChild(e);
+  }
+  var sb = $('spStartBtn');
+  sb.disabled = SPYOU < 0;
+  sb.textContent = SPYOU < 0 ? 'Pick a role to join' : 'Open the shop! (bots fill the rest)';
+}
+
+function spBuildField(){
+  var f = $('spfield');
+  f.innerHTML = '';
+  f.style.height = (f.clientWidth * SPC.H / SPC.W) + 'px';
+  function st(x, y, cls, html){
+    var d = document.createElement('div');
+    d.className = 'spst';
+    d.innerHTML = '<div class="' + cls + '">' + html + '</div>';
+    spPct(d, x, y);
+    f.appendChild(d);
+    return d;
+  }
+  st(SPC.DOOR.x, SPC.DOOR.y + 10, 'sp-simple', '🚪');
+  SPC.TABLES.forEach(function(t){ st(t.x, t.y, 'sp-table', ''); });
+  st(SPC.TOGO.x, SPC.TOGO.y, 'sp-simple', '📦<span class="lbl">To-go</span>');
+  st(SPC.REG.x, SPC.REG.y, 'sp-simple', '💰<span class="lbl">Pay</span>');
+  var ctr = st(SPC.COUNTER.x, SPC.COUNTER.y, 'sp-counter', '');
+  ctr.id = 'spCtrEl';
+  SPC.POTS.forEach(function(p, i){
+    var d = st(p.x, p.y, 'sp-pot', '');
+    d.id = 'spPot' + i;
+  });
+  st(SPC.BOARD.x, SPC.BOARD.y, 'sp-simple', '🔪<span class="lbl">Chop</span>');
+  SPC.BINS.forEach(function(b){
+    st(b.x, b.y, 'sp-simple', SP_ICON[b.type] + '<span class="lbl">' + b.type + '</span>');
+  });
+  spCustEls = {};
+  spPlayerEls = {};
+  spBuilt = true;
+}
+
+function spCarryIcon(carry){
+  if (!carry) return '';
+  if (carry.kind === 'raw') return SP_ICON[carry.ing];
+  if (carry.kind === 'chopped') return '✨' + SP_ICON[carry.ing];
+  if (carry.kind === 'bowl') return '🍜';
+  return '';
+}
+
+function renderSpGame(){
+  show('scr-spgame');
+  var bk = $('spWatchBack');
+  bk.style.display = '';
+  bk.textContent = (SPYOU >= 0) ? '‹ Quit shift' : '‹ Back to games';
+  var f = $('spfield');
+  if (!spBuilt || !f.children.length) spBuildField();
+  $('spClock').textContent = spClock(SPS.t);
+  $('spRush').classList.toggle('on', !!SPS.rush);
+  var total = SPS.sold.meat + SPS.sold.tomato + SPS.sold.potato;
+  $('spSold').textContent = '🍲 ' + total;
+  $('spMissed').textContent = '😿 ' + SPS.missed;
+  SPS.pots.forEach(function(pt, i){
+    var el = $('spPot' + i);
+    if (!el) return;
+    var dots = '';
+    for (var k = 0; k < 3; k++) dots += k < pt.ing ? '<b>●</b>' : '○';
+    var body = SP_ICON[pt.type] + '🍲';
+    if (pt.servings > 0) body += '<div style="font-size:10px;font-weight:800;color:var(--accent-deep);">' + pt.servings + ' left!</div>';
+    else if (pt.cook > 0) body += '<div class="pbarw"><i style="width:' + pt.cook + '%"></i></div>' + (pt.boost ? '<div style="font-size:9px;">🥄 stirring</div>' : '<div style="font-size:9px;color:var(--ink-soft);">slow...</div>');
+    else body += '<div class="dots">' + dots + '</div>';
+    el.firstChild.innerHTML = body;
+  });
+  var ctr = $('spCtrEl');
+  if (ctr){
+    var bowls = SPS.counter.map(function(s){ return '<span>🍜<span style="font-size:9px;">' + SP_ICON[s] + '</span></span>'; }).join('');
+    ctr.innerHTML = bowls || '<span style="font-size:10px;color:#8F6A42;font-weight:800;">counter</span>';
+  }
+  var seen = {};
+  SPS.customers.forEach(function(c){
+    seen[c.id] = true;
+    var el = spCustEls[c.id];
+    if (!el){
+      el = document.createElement('div');
+      el.className = 'sp-cust';
+      el.innerHTML = catSVG(c.cat) + '<div class="bub"></div><div class="cpb"><i></i></div>';
+      $('spfield').appendChild(el);
+      spCustEls[c.id] = el;
+      spPct(el, c.x, c.y);
+    }
+    spPct(el, c.x, c.y);
+    var bub = el.querySelector('.bub');
+    var tag = c.type === 'togo' ? '📦' : '';
+    if (c.state === 'arriving') bub.textContent = tag + '👋';
+    else if (c.state === 'seated') bub.textContent = tag + SP_ICON[c.soup] + '❓';
+    else if (c.state === 'ordered') bub.textContent = tag + SP_ICON[c.soup];
+    else if (c.state === 'eating') bub.textContent = '😋';
+    else if (c.state === 'topay') bub.textContent = '💳';
+    else bub.textContent = '';
+    var pb = el.querySelector('.cpb i');
+    var showPat = c.state === 'seated' || c.state === 'ordered';
+    el.querySelector('.cpb').style.display = showPat ? '' : 'none';
+    if (showPat){
+      pb.style.width = c.pat + '%';
+      pb.className = c.pat < 35 ? 'low' : '';
+    }
+  });
+  Object.keys(spCustEls).forEach(function(id){
+    if (!seen[id]){ spCustEls[id].remove(); delete spCustEls[id]; }
+  });
+  SPS.players.forEach(function(p, i){
+    var el = spPlayerEls[i];
+    if (!el){
+      el = document.createElement('div');
+      el.className = 'sp-player' + (i === SPYOU ? '' : ' other');
+      el.innerHTML = catSVG(p.cat) +
+        '<span class="rb"></span><span class="cy"></span>' +
+        '<span class="nm"></span><div class="bb"><i></i></div>';
+      $('spfield').appendChild(el);
+      spPlayerEls[i] = el;
+    }
+    if (i === SPYOU) spPct(el, spPos.x, spPos.y);
+    else spPct(el, p.x, p.y);
+    var rc = SP_ROLE_C.find(function(r){ return r[0] === p.role; });
+    el.querySelector('.rb').textContent = rc ? rc[1] : '';
+    el.querySelector('.cy').textContent = spCarryIcon(p.carry);
+    el.querySelector('.nm').textContent = p.name + (i === SPYOU ? ' (you)' : '') + (p.isBot ? ' 🤖' : '');
+    var busyMs = i === SPYOU ? Math.max(0, spBusyLocal - Date.now()) : p.busy;
+    el.classList.toggle('busy', busyMs > 0);
+    if (busyMs > 0) el.querySelector('.bb i').style.width = (busyMs / 1580 * 100) + '%';
+  });
+  Object.keys(spPlayerEls).forEach(function(i){
+    if (+i >= SPS.players.length){ spPlayerEls[i].remove(); delete spPlayerEls[i]; }
+  });
+  spUpdateAction();
+  spStartLoop();
+}
+
+function spMyAction(){
+  if (SPYOU < 0 || !SPS || SPS.phase !== 'playing') return null;
+  var me = SPS.players[SPYOU];
+  if (!me) return null;
+  if (Date.now() < spBusyLocal || me.busy > 0) return null;
+  var carry = me.carry;
+  var near = function(pt){ return spD(spPos, pt) < SPC.RANGE; };
+  if (me.role === 'prep'){
+    if (!carry){
+      var bin = SPC.BINS.find(near);
+      if (bin) return 'Pick ' + SP_ICON[bin.type];
+    } else if (carry.kind === 'raw' && near(SPC.BOARD)) return 'Chop 🔪';
+    else if (carry.kind === 'chopped'){
+      var pi = SPC.POTS.findIndex(function(pt, i){
+        return pt.type === carry.ing && near(pt) && SPS.pots[i].ing < 3 && SPS.pots[i].cook === 0 && SPS.pots[i].servings === 0;
+      });
+      if (pi >= 0) return 'Put in 🍲';
+    }
+  } else if (me.role === 'chef'){
+    if (!carry){
+      var ri = SPC.POTS.findIndex(function(pt, i){ return near(pt) && SPS.pots[i].servings > 0; });
+      if (ri >= 0 && SPS.counter.length < 4) return 'Pour 🍜';
+      var ci = SPC.POTS.findIndex(function(pt, i){ return near(pt) && SPS.pots[i].cook > 0 && SPS.pots[i].cook < 100; });
+      if (ci >= 0) return 'Stir 🥄';
+    } else if (carry.kind === 'bowl' && near(SPC.COUNTER) && SPS.counter.length < 4) return 'Place ⬆️';
+  } else if (me.role === 'server'){
+    if (!carry){
+      var c1 = SPS.customers.find(function(c){ return c.state === 'seated' && spD(spPos, c) < SPC.RANGE; });
+      if (c1) return 'Take order 🛎️';
+      if (near(SPC.COUNTER)){
+        var waiting = SPS.customers.filter(function(c){
+          return c.state === 'ordered' && !SPS.players.some(function(q){ return q.carry && q.carry.kind === 'bowl' && q.carry.target === c.id; });
+        });
+        if (waiting.some(function(c){ return SPS.counter.indexOf(c.soup) >= 0; })) return 'Pick up 🍜';
+      }
+    } else if (carry.kind === 'bowl' && carry.target != null){
+      var c2 = SPS.customers.find(function(c){ return c.id === carry.target && c.state === 'ordered' && spD(spPos, c) < SPC.RANGE; });
+      if (c2) return 'Serve 🍽️';
+    }
+  } else if (me.role === 'cleaner'){
+    if (near(SPC.REG) && SPS.customers.some(function(c){ return c.state === 'topay' && spD(c, { x: SPC.REG.x + 22, y: SPC.REG.y }) < 30; })) return 'Pay 💳';
+    var ti = SPS.tables.findIndex(function(tb, i){ return tb.dirty && spD(spPos, SPC.TABLES[i]) < SPC.RANGE; });
+    if (ti >= 0) return 'Clean 🧹';
+  }
+  return null;
+}
+
+function spUpdateAction(){
+  var b = $('spact');
+  if (SPYOU < 0){
+    b.disabled = true; b.textContent = '👀 Watching';
+    $('spstatus').textContent = 'The shop is busy — enjoy the show!';
+    return;
+  }
+  if (SPS.phase !== 'playing'){
+    b.disabled = true; b.textContent = '…';
+    $('spstatus').textContent = '';
+    return;
+  }
+  var me = SPS.players[SPYOU];
+  if (Date.now() < spBusyLocal || (me && me.busy > 0)){
+    b.disabled = true; b.textContent = 'Working...';
+    $('spstatus').textContent = '';
+    return;
+  }
+  var label = spMyAction();
+  b.disabled = !label;
+  b.textContent = label || 'Move closer...';
+  var rc = me ? SP_ROLE_C.find(function(r){ return r[0] === me.role; }) : null;
+  $('spstatus').textContent = rc ? ('Your role: ' + rc[1] + ' ' + rc[2] + ' · drag / arrows to move · F = action') : '';
+}
+
+function spAct(){
+  if (SPYOU < 0 || !SPS || SPS.phase !== 'playing') return;
+  if (Date.now() < spBusyLocal) return;
+  if (!spMyAction()) return;
+  SFX.tap();
+  socket.emit('sp_act');
+  spBusyLocal = Date.now() + 1580;
+  spUpdateAction();
+}
+
+function spInitMe(){
+  if (SPYOU >= 0 && SPS && SPS.players[SPYOU]){
+    spPos.x = SPS.players[SPYOU].x;
+    spPos.y = SPS.players[SPYOU].y;
+  }
+  spTarget = null; spVel.x = 0; spVel.y = 0; spBusyLocal = 0;
+  spBuilt = false;
+}
+
+var spPrevTs = 0;
+function spFrame(ts){
+  if (!$('scr-spgame').classList.contains('on')){ spRafOn = false; return; }
+  requestAnimationFrame(spFrame);
+  var dt = spPrevTs ? Math.min(0.05, (ts - spPrevTs) / 1000) : 0.016;
+  spPrevTs = ts;
+  if (SPYOU < 0 || !SPS || SPS.phase !== 'playing') return;
+  if (Date.now() < spBusyLocal) return;
+  var vx = spVel.x, vy = spVel.y;
+  if (spKeys.l) vx -= 1; if (spKeys.r) vx += 1;
+  if (spKeys.u) vy -= 1; if (spKeys.d) vy += 1;
+  var moved = false;
+  if (vx || vy){
+    var len = Math.hypot(vx, vy) || 1;
+    spPos.x += vx / len * 165 * dt;
+    spPos.y += vy / len * 165 * dt;
+    spTarget = null;
+    moved = true;
+  } else if (spTarget){
+    var d = spD(spPos, spTarget);
+    if (d < 5) spTarget = null;
+    else {
+      var stp = Math.min(d, 165 * dt);
+      spPos.x += (spTarget.x - spPos.x) / d * stp;
+      spPos.y += (spTarget.y - spPos.y) / d * stp;
+      moved = true;
+    }
+  }
+  if (moved){
+    spPos.x = Math.max(14, Math.min(346, spPos.x));
+    spPos.y = Math.max(14, Math.min(416, spPos.y));
+    var el = spPlayerEls[SPYOU];
+    if (el) spPct(el, spPos.x, spPos.y);
+    var now = Date.now();
+    if (now - spLastSent > 100){
+      spLastSent = now;
+      socket.emit('sp_pos', { x: Math.round(spPos.x), y: Math.round(spPos.y) });
+    }
+    spUpdateAction();
+  }
+}
+function spStartLoop(){
+  if (spRafOn) return;
+  spRafOn = true;
+  spPrevTs = 0;
+  requestAnimationFrame(spFrame);
+}
+
+function handleSpFx(){
+  if (!SPS || !SPS.fx) return;
+  var onScreen = $('scr-spgame').classList.contains('on');
+  SPS.fx.forEach(function(f){
+    if (f.seq <= spLastFx) return;
+    spLastFx = f.seq;
+    if (!onScreen) return;
+    if (f.type === 'bell') SFX.pop();
+    else if (f.type === 'chop') SFX.thump();
+    else if (f.type === 'stir') SFX.tick();
+    else if (f.type === 'place' || f.type === 'order' || f.type === 'clean') SFX.tap();
+    else if (f.type === 'batch') SFX.coin();
+    else if (f.type === 'cookstart') SFX.pop();
+    else if (f.type === 'serve') SFX.hit();
+    else if (f.type === 'pay') SFX.coin();
+    else if (f.type === 'angry') SFX.womp();
+  });
+}
+
+function renderSpOver(){
+  var ov = $('overOverlay'), card = $('overCard');
+  var total = SPS.sold.meat + SPS.sold.tomato + SPS.sold.potato;
+  var stars = '⭐'.repeat(Math.max(1, SPS.stars || 1));
+  card.innerHTML = '<div style="font-size:42px;">🍲</div>' +
+    '<h2>Closing time!</h2>' +
+    '<div class="wsub">Today the shop sold ' + total + ' bowls of soup</div>' +
+    '<div style="font-size:30px;margin:2px 0 10px;">' + stars + '</div>' +
+    '<div class="rrow"><span class="medal">🥩</span><span class="rn">Meat soup</span><span class="rs">' + SPS.sold.meat + '</span></div>' +
+    '<div class="rrow"><span class="medal">🍅</span><span class="rn">Tomato soup</span><span class="rs">' + SPS.sold.tomato + '</span></div>' +
+    '<div class="rrow"><span class="medal">🥔</span><span class="rn">Potato soup</span><span class="rs">' + SPS.sold.potato + '</span></div>' +
+    '<div class="rrow"><span class="medal">😿</span><span class="rn">Walked away hungry</span><span class="rs">' + SPS.missed + '</span></div>' +
+    (SPYOU >= 0 ? '<button class="btn" id="spAgainBtn" style="margin-top:8px;">Open another day</button><button class="btn ghost" id="spOverLeaveBtn" style="margin-top:8px;">Back to games</button>'
+      : '<button class="btn ghost" id="spOverBackBtn" style="margin-top:8px;">Back to games</button>');
+  ov.classList.add('on');
+  if (SPYOU >= 0){
+    $('spAgainBtn').onclick = function(){ SFX.tap(); socket.emit('sp_again'); };
+    $('spOverLeaveBtn').onclick = function(){ socket.emit('sp_leave'); SPYOU = -1; WATCH = null; ov.classList.remove('on'); route(); };
+  } else {
+    $('spOverBackBtn').onclick = function(){ WATCH = null; ov.classList.remove('on'); route(); };
+  }
+}
+
+(function spInput(){
+  var joy = $('joy'), knob = $('joyk');
+  var jid = null;
+  function setKnob(dx, dy){
+    knob.style.left = (32 + dx * 26) + 'px';
+    knob.style.top = (32 + dy * 26) + 'px';
+  }
+  joy.addEventListener('pointerdown', function(e){
+    jid = e.pointerId;
+    joy.setPointerCapture(jid);
+    e.preventDefault();
+  });
+  joy.addEventListener('pointermove', function(e){
+    if (e.pointerId !== jid) return;
+    var r = joy.getBoundingClientRect();
+    var dx = (e.clientX - r.left - r.width / 2) / 40;
+    var dy = (e.clientY - r.top - r.height / 2) / 40;
+    var len = Math.hypot(dx, dy);
+    if (len > 1){ dx /= len; dy /= len; }
+    spVel.x = dx; spVel.y = dy;
+    setKnob(dx, dy);
+  });
+  function jend(e){
+    if (e.pointerId !== jid) return;
+    jid = null;
+    spVel.x = 0; spVel.y = 0;
+    setKnob(0, 0);
+  }
+  joy.addEventListener('pointerup', jend);
+  joy.addEventListener('pointercancel', jend);
+  $('spfield').addEventListener('pointerdown', function(e){
+    if (SPYOU < 0) return;
+    var r = $('spfield').getBoundingClientRect();
+    spTarget = {
+      x: (e.clientX - r.left) / r.width * SPC.W,
+      y: (e.clientY - r.top) / r.height * SPC.H
+    };
+  });
+  document.addEventListener('keydown', function(e){
+    if (!$('scr-spgame').classList.contains('on')) return;
+    var k = e.key;
+    if (k === 'ArrowLeft' || k === 'a' || k === 'A') spKeys.l = true;
+    else if (k === 'ArrowRight' || k === 'd' || k === 'D') spKeys.r = true;
+    else if (k === 'ArrowUp' || k === 'w' || k === 'W') spKeys.u = true;
+    else if (k === 'ArrowDown' || k === 's' || k === 'S') spKeys.d = true;
+    else if (k === 'f' || k === 'F'){ spAct(); return; }
+    else return;
+    e.preventDefault();
+  });
+  document.addEventListener('keyup', function(e){
+    var k = e.key;
+    if (k === 'ArrowLeft' || k === 'a' || k === 'A') spKeys.l = false;
+    else if (k === 'ArrowRight' || k === 'd' || k === 'D') spKeys.r = false;
+    else if (k === 'ArrowUp' || k === 'w' || k === 'W') spKeys.u = false;
+    else if (k === 'ArrowDown' || k === 's' || k === 'S') spKeys.d = false;
+  });
+})();
+$('spact').onclick = spAct;
+$('spBack').onclick = function(){
+  if (SPYOU >= 0){ socket.emit('sp_leave'); SPYOU = -1; }
+  WATCH = null;
+  route();
+};
+$('spWatchBack').onclick = function(){
+  if (SPYOU >= 0){
+    if (!confirm('Leave the kitchen? A bot takes over your role 🤖')) return;
+    socket.emit('sp_leave');
+    SPYOU = -1;
+  }
+  WATCH = null;
+  $('overOverlay').classList.remove('on');
+  route();
+};
+$('spStartBtn').onclick = function(){ SFX.tap(); socket.emit('sp_start'); };
+$('spCopyBtn').onclick = function(){ copyLink(); };
+$('cardSoup').onclick = function(){
+  var id = ident();
+  if (!id) return renderChar();
+  WATCH = 'soup';
+  route();
+};
+
 function submitRoom(){
   var code = $('roomInput').value.replace(/[^0-9]/g, '').slice(0, 4);
   if (code.length !== 4) return toast('Enter the 4-digit room code.');
@@ -1813,6 +2426,20 @@ socket.on('pp_round', function(payload){
 socket.on('pp_result', function(payload){
   if (payload.you < 0 && WATCH !== 'paw'){ PS = payload.state; PYOU = payload.you; return; }
   onPPResult(payload);
+});
+socket.on('sp_state', function(payload){
+  var prev = SPS ? SPS.phase : '';
+  SPS = payload.state; SPYOU = payload.you;
+  handleSpFx();
+  var involved = SPYOU >= 0 || WATCH === 'soup';
+  if (!involved){
+    if ($('scr-menu').classList.contains('on')) updateSoupCard();
+    return;
+  }
+  if (prev !== 'playing' && SPS.phase === 'playing') spInitMe();
+  if (prev === 'playing' && SPS.phase === 'over') SFX.fanfare();
+  if (animating || ppRoundOn) return;
+  route();
 });
 socket.on('run_state', function(payload){
   var prevPhase = RUNS ? RUNS.phase : '';

@@ -194,6 +194,347 @@ function themedBoard(key) {
   });
 }
 
+const SC = SPEED === 1 ? 1 : 0.12;
+const SOUPS = ['meat', 'tomato', 'potato'];
+const SOUP_ICON = { meat: '🥩', tomato: '🍅', potato: '🥔' };
+const SP_ROLES = ['prep', 'chef', 'server', 'cleaner'];
+const SP_ROLE_INFO = { prep: '🔪', chef: '🥄', server: '🛎️', cleaner: '🧹' };
+const SP_DAY = 240000;
+const SP_ACT = 1500;
+const SP_EAT = 8000;
+const SP_PATIENCE = 60000;
+const SP_TICK = Math.max(30, Math.round(250 * SC));
+const SP_TABLES = [{ x: 62, y: 78 }, { x: 152, y: 78 }, { x: 242, y: 78 }, { x: 330, y: 78 }];
+const SP_TOGO = { x: 330, y: 168 };
+const SP_REG = { x: 36, y: 168 };
+const SP_DOOR = { x: 190, y: 6 };
+const SP_COUNTER = { x: 183, y: 168 };
+const SP_POTS = [{ x: 92, y: 258, type: 'meat' }, { x: 183, y: 258, type: 'tomato' }, { x: 274, y: 258, type: 'potato' }];
+const SP_BOARD = { x: 66, y: 352 };
+const SP_BINS = [{ x: 170, y: 352, type: 'meat' }, { x: 240, y: 352, type: 'potato' }, { x: 305, y: 352, type: 'tomato' }];
+const SP_RANGE = 52;
+const SP_BOTSPD = 150;
+
+function freshSoup() {
+  return {
+    phase: 'lobby', players: [], timer: null, startAt: 0,
+    pots: SP_POTS.map(p => ({ type: p.type, ing: 0, cook: 0, boost: 0, servings: 0 })),
+    counter: [], customers: [], custSeq: 0,
+    tables: SP_TABLES.map(() => ({ dirty: false, occ: null })),
+    sold: { meat: 0, tomato: 0, potato: 0 }, missed: 0,
+    fxSeq: 0, fx: []
+  };
+}
+function soupByPid(pid) { return soup.players.find(p => p.id === pid); }
+function youOfSoup(s) { return soup.players.findIndex(p => p.id === s.data.pid); }
+function spFx(type, a) { soup.fxSeq++; soup.fx.push({ seq: soup.fxSeq, type, a }); if (soup.fx.length > 8) soup.fx.shift(); }
+function spDist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+function spMinutes() { return 600 + Math.min(360, (Date.now() - soup.startAt) / (SP_DAY * SC) * 360); }
+function spRush() { const m = spMinutes(); return m >= 720 && m < 780; }
+function spTotalSold() { return soup.sold.meat + soup.sold.tomato + soup.sold.potato; }
+
+function spPub() {
+  const now = Date.now();
+  return {
+    phase: soup.phase,
+    t: Math.floor(spMinutes()),
+    rush: soup.phase === 'playing' && spRush(),
+    sold: soup.sold, missed: soup.missed, fx: soup.fx, stars: soup.stars || 0,
+    players: soup.players.map(p => ({
+      name: p.name, cat: p.cat, role: p.role, isBot: p.isBot, connected: p.connected,
+      x: Math.round(p.x), y: Math.round(p.y),
+      busy: p.busyUntil > now ? Math.max(0, p.busyUntil - now) : 0,
+      carry: p.carry
+    })),
+    pots: soup.pots.map(pt => ({
+      type: pt.type, ing: pt.ing, cook: Math.round(pt.cook),
+      boost: now < pt.boost, servings: pt.servings
+    })),
+    counter: soup.counter.slice(),
+    customers: soup.customers.map(c => ({
+      id: c.id, cat: c.cat, type: c.type, seat: c.seat, soup: c.soup, state: c.state,
+      pat: c.state === 'seated' || c.state === 'ordered' ? Math.round(c.patience / SP_PATIENCE / SC * 100) : 100,
+      x: Math.round(c.x), y: Math.round(c.y)
+    })),
+    tables: soup.tables.map(tb => ({ dirty: tb.dirty, occ: tb.occ != null }))
+  };
+}
+function emitAllSoup(type, payload) {
+  for (const s of socketsInRoom(CUR.code)) {
+    s.emit(type, Object.assign({}, payload, { state: spPub(), you: youOfSoup(s) }));
+  }
+}
+function spBroadcast() { emitAllSoup('sp_state', {}); }
+
+function spAddBot(role) {
+  const catFree = CAT_KEYS.find(c => !soup.players.some(p => p.cat === c));
+  const used = soup.players.map(p => p.name);
+  const name = BOT_NAMES.find(n => !used.includes(n)) || 'Bot';
+  soup.players.push({
+    id: rid(), name, cat: catFree || 'orange', role, isBot: true, connected: true,
+    x: 60 + Math.random() * 240, y: 200 + Math.random() * 60,
+    busyUntil: 0, carry: null, bt: null
+  });
+}
+
+function spDemand() {
+  const need = { meat: 0, tomato: 0, potato: 0 };
+  soup.customers.forEach(c => {
+    if (c.state === 'seated' || c.state === 'ordered') need[c.soup]++;
+  });
+  soup.counter.forEach(s => { need[s]--; });
+  soup.players.forEach(p => { if (p.carry && p.carry.kind === 'bowl') need[p.carry.soup]--; });
+  soup.pots.forEach(pt => {
+    need[pt.type] -= pt.servings;
+    if (pt.ing > 0 || pt.cook > 0) need[pt.type] -= 3;
+  });
+  return need;
+}
+
+function spActionFor(p) {
+  const now = Date.now();
+  if (p.busyUntil > now) return null;
+  if (p.role === 'prep') {
+    if (!p.carry) {
+      const bin = SP_BINS.find(b => spDist(p, b) < SP_RANGE);
+      if (bin) return { t: 'pick', ing: bin.type };
+    } else if (p.carry.kind === 'raw' && spDist(p, SP_BOARD) < SP_RANGE) {
+      return { t: 'chop' };
+    } else if (p.carry.kind === 'chopped') {
+      const pi = SP_POTS.findIndex(pt => pt.type === p.carry.ing && spDist(p, pt) < SP_RANGE);
+      if (pi >= 0 && soup.pots[pi].ing < 3 && soup.pots[pi].cook === 0 && soup.pots[pi].servings === 0) return { t: 'deposit', pot: pi };
+    }
+  } else if (p.role === 'chef') {
+    if (!p.carry) {
+      const ri = SP_POTS.findIndex((pt, i) => spDist(p, pt) < SP_RANGE && soup.pots[i].servings > 0);
+      if (ri >= 0 && soup.counter.length < 4) return { t: 'pour', pot: ri };
+      const ci = SP_POTS.findIndex((pt, i) => spDist(p, pt) < SP_RANGE && soup.pots[i].cook > 0 && soup.pots[i].cook < 100);
+      if (ci >= 0) return { t: 'stir', pot: ci };
+    } else if (p.carry.kind === 'bowl' && spDist(p, SP_COUNTER) < SP_RANGE && soup.counter.length < 4) {
+      return { t: 'place' };
+    }
+  } else if (p.role === 'server') {
+    if (!p.carry) {
+      const c = soup.customers.find(c => c.state === 'seated' && spDist(p, c) < SP_RANGE);
+      if (c) return { t: 'order', cust: c.id };
+      if (spDist(p, SP_COUNTER) < SP_RANGE && soup.counter.length) {
+        const waiting = soup.customers.filter(c => c.state === 'ordered' && !soup.players.some(q => q.carry && q.carry.kind === 'bowl' && q.carry.target === c.id));
+        const match = waiting.find(c => soup.counter.includes(c.soup));
+        if (match) return { t: 'pickup', cust: match.id, soup: match.soup };
+      }
+    } else if (p.carry.kind === 'bowl' && p.carry.target != null) {
+      const c = soup.customers.find(c => c.id === p.carry.target && c.state === 'ordered' && spDist(p, c) < SP_RANGE);
+      if (c) return { t: 'serve', cust: c.id };
+    }
+  } else if (p.role === 'cleaner') {
+    const c = soup.customers.find(c => c.state === 'topay' && c.atReg && spDist(p, SP_REG) < SP_RANGE);
+    if (c) return { t: 'pay', cust: c.id };
+    const ti = soup.tables.findIndex((tb, i) => tb.dirty && spDist(p, SP_TABLES[i]) < SP_RANGE);
+    if (ti >= 0) return { t: 'clean', table: ti };
+  }
+  return null;
+}
+
+function spDoAction(p) {
+  const act = spActionFor(p);
+  if (!act) return false;
+  const pIdx = soup.players.indexOf(p);
+  p.busyUntil = Date.now() + SP_ACT * SC + 80;
+  setTimeout(bind(CUR, () => {
+    if (soup.phase !== 'playing') return;
+    const q = soup.players[pIdx];
+    if (!q || q !== p) return;
+    if (act.t === 'pick') { if (!p.carry) p.carry = { kind: 'raw', ing: act.ing }; }
+    else if (act.t === 'chop') { if (p.carry && p.carry.kind === 'raw') { p.carry = { kind: 'chopped', ing: p.carry.ing }; spFx('chop'); } }
+    else if (act.t === 'deposit') {
+      const pot = soup.pots[act.pot];
+      if (p.carry && p.carry.kind === 'chopped' && pot.ing < 3 && pot.cook === 0 && pot.servings === 0) {
+        pot.ing++; p.carry = null;
+        if (pot.ing === 3) { pot.cook = 1; spFx('cookstart'); glog('🍲 Soup · ' + pot.type + ' 냄비 조리 시작'); }
+      }
+    }
+    else if (act.t === 'stir') { soup.pots[act.pot].boost = Date.now() + 4000 * SC; spFx('stir'); }
+    else if (act.t === 'pour') {
+      const pot = soup.pots[act.pot];
+      if (pot.servings > 0 && !p.carry) { pot.servings--; p.carry = { kind: 'bowl', soup: pot.type, target: null }; }
+    }
+    else if (act.t === 'place') { if (p.carry && p.carry.kind === 'bowl' && soup.counter.length < 4) { soup.counter.push(p.carry.soup); p.carry = null; spFx('place'); } }
+    else if (act.t === 'order') {
+      const c = soup.customers.find(c => c.id === act.cust);
+      if (c && c.state === 'seated') { c.state = 'ordered'; spFx('order'); }
+    }
+    else if (act.t === 'pickup') {
+      const bi = soup.counter.indexOf(act.soup);
+      const c = soup.customers.find(c => c.id === act.cust);
+      if (bi >= 0 && c && c.state === 'ordered' && !p.carry) { soup.counter.splice(bi, 1); p.carry = { kind: 'bowl', soup: act.soup, target: act.cust }; }
+    }
+    else if (act.t === 'serve') {
+      const c = soup.customers.find(c => c.id === act.cust);
+      if (c && c.state === 'ordered' && p.carry && p.carry.soup === c.soup) {
+        p.carry = null;
+        spFx('serve');
+        if (c.type === 'togo') { c.state = 'topay'; c.tgt = { x: SP_REG.x + 22, y: SP_REG.y }; }
+        else { c.state = 'eating'; c.eatUntil = Date.now() + SP_EAT * SC; }
+      }
+    }
+    else if (act.t === 'pay') {
+      const c = soup.customers.find(c => c.id === act.cust);
+      if (c && c.state === 'topay') {
+        soup.sold[c.soup]++;
+        spFx('pay');
+        glog('🍲 Soup · ' + c.soup + ' 1그릇 판매! (누적 ' + spTotalSold() + ')');
+        if (c.seat != null && c.type === 'dine') { soup.tables[c.seat].dirty = true; soup.tables[c.seat].occ = null; }
+        c.state = 'leaving'; c.tgt = { x: SP_DOOR.x, y: SP_DOOR.y };
+      }
+    }
+    else if (act.t === 'clean') {
+      const tb = soup.tables[act.table];
+      if (tb && tb.dirty) { tb.dirty = false; spFx('clean'); }
+    }
+  }), SP_ACT * SC);
+  return true;
+}
+
+function spBotTargetFor(p) {
+  if (p.role === 'prep') {
+    if (!p.carry) {
+      const need = spDemand();
+      const best = SOUPS.filter(s => {
+        const pot = soup.pots.find(pt => pt.type === s);
+        return need[s] > 0 && pot.ing < 3 && pot.cook === 0 && pot.servings === 0;
+      }).sort((a, b) => need[b] - need[a])[0];
+      if (best) return SP_BINS.find(b => b.type === best);
+      const fill = soup.pots.find(pt => pt.ing > 0 && pt.ing < 3 && pt.cook === 0);
+      if (fill) return SP_BINS.find(b => b.type === fill.type);
+      return null;
+    }
+    if (p.carry.kind === 'raw') return SP_BOARD;
+    if (p.carry.kind === 'chopped') return SP_POTS.find(pt => pt.type === p.carry.ing);
+  } else if (p.role === 'chef') {
+    if (p.carry && p.carry.kind === 'bowl') return SP_COUNTER;
+    const ready = SP_POTS.findIndex((pt, i) => soup.pots[i].servings > 0);
+    if (ready >= 0 && soup.counter.length < 4) return SP_POTS[ready];
+    const cooking = soup.pots
+      .map((pt, i) => ({ pt, i }))
+      .filter(o => o.pt.cook > 0 && o.pt.cook < 100 && Date.now() >= o.pt.boost)
+      .sort((a, b) => a.pt.cook - b.pt.cook)[0];
+    if (cooking) return SP_POTS[cooking.i];
+    return null;
+  } else if (p.role === 'server') {
+    if (p.carry && p.carry.kind === 'bowl' && p.carry.target != null) {
+      const c = soup.customers.find(c => c.id === p.carry.target);
+      return c || SP_COUNTER;
+    }
+    const toOrder = soup.customers.find(c => c.state === 'seated');
+    if (toOrder) return toOrder;
+    const waiting = soup.customers.filter(c => c.state === 'ordered' && !soup.players.some(q => q.carry && q.carry.kind === 'bowl' && q.carry.target === c.id));
+    if (waiting.some(c => soup.counter.includes(c.soup))) return SP_COUNTER;
+    return null;
+  } else if (p.role === 'cleaner') {
+    if (soup.customers.some(c => c.state === 'topay' && c.atReg)) return SP_REG;
+    const ti = soup.tables.findIndex(tb => tb.dirty);
+    if (ti >= 0) return SP_TABLES[ti];
+    return null;
+  }
+  return null;
+}
+
+function spMoveToward(o, tgt, spd, dt) {
+  const d = spDist(o, tgt);
+  if (d < 4) { o.x = tgt.x; o.y = tgt.y; return true; }
+  const step = Math.min(d, spd * dt);
+  o.x += (tgt.x - o.x) / d * step;
+  o.y += (tgt.y - o.y) / d * step;
+  return spDist(o, tgt) < 5;
+}
+
+function spSpawnCustomer() {
+  const togo = Math.random() < 0.2;
+  if (togo) {
+    if (soup.customers.some(c => c.type === 'togo' && c.state !== 'leaving')) return;
+  } else {
+    if (!soup.tables.some(tb => !tb.dirty && tb.occ == null)) return;
+  }
+  soup.custSeq++;
+  const cat = CAT_KEYS[Math.floor(Math.random() * CAT_KEYS.length)];
+  const soupType = SOUPS[Math.floor(Math.random() * 3)];
+  const c = {
+    id: soup.custSeq, cat, type: togo ? 'togo' : 'dine', soup: soupType,
+    state: 'arriving', patience: SP_PATIENCE * SC,
+    x: SP_DOOR.x, y: SP_DOOR.y, atReg: false, seat: null, tgt: null
+  };
+  if (togo) { c.tgt = { x: SP_TOGO.x, y: SP_TOGO.y }; }
+  else {
+    const ti = soup.tables.findIndex(tb => !tb.dirty && tb.occ == null);
+    soup.tables[ti].occ = c.id;
+    c.seat = ti;
+    c.tgt = { x: SP_TABLES[ti].x, y: SP_TABLES[ti].y + 20 };
+  }
+  soup.customers.push(c);
+  spFx('bell');
+}
+
+function spTick() {
+  if (soup.phase !== 'playing') return;
+  const now = Date.now();
+  const dt = SP_TICK / 1000 / SC;
+  const m = spMinutes();
+  if (m >= 960) { spEndDay(); return; }
+  if (m < 940) {
+    const p = spRush() ? 0.08 : 0.024;
+    if (Math.random() < p * (SP_TICK / (250 * SC))) spSpawnCustomer();
+  }
+  soup.pots.forEach(pt => {
+    if (pt.cook > 0 && pt.cook < 100) {
+      pt.cook += (now < pt.boost ? 12 : 4) * dt;
+      if (pt.cook >= 100) { pt.cook = 100; pt.ing = 0; pt.servings = 3; pt.cook = 0; spFx('batch'); glog('🍲 Soup · ' + pt.type + ' 스프 완성! (3그릇)'); }
+    }
+  });
+  for (const c of soup.customers.slice()) {
+    if (c.tgt) {
+      const arrived = spMoveToward(c, c.tgt, 110, dt);
+      if (arrived) {
+        c.tgt = null;
+        if (c.state === 'arriving') c.state = 'seated';
+        else if (c.state === 'topay') c.atReg = true;
+        else if (c.state === 'leaving') soup.customers.splice(soup.customers.indexOf(c), 1);
+      }
+    }
+    if (c.state === 'seated' || c.state === 'ordered') {
+      c.patience -= SP_TICK;
+      if (c.patience <= 0) {
+        soup.missed++;
+        spFx('angry');
+        glog('😿 Soup · 손님이 기다리다 떠났어요 (' + SOUP_ICON[c.soup] + ')');
+        if (c.seat != null) soup.tables[c.seat].occ = null;
+        c.state = 'leaving'; c.tgt = { x: SP_DOOR.x, y: SP_DOOR.y };
+      }
+    }
+    if (c.state === 'eating' && now >= c.eatUntil) {
+      c.state = 'topay';
+      c.tgt = { x: SP_REG.x + 22, y: SP_REG.y };
+    }
+  }
+  soup.players.forEach(p => {
+    if (!p.isBot || p.busyUntil > now) return;
+    const tgt = spBotTargetFor(p);
+    if (!tgt) return;
+    const arrived = spMoveToward(p, tgt, SP_BOTSPD, dt);
+    if (arrived || spDist(p, tgt) < SP_RANGE - 8) spDoAction(p);
+  });
+  spBroadcast();
+}
+
+function spEndDay() {
+  soup.phase = 'over';
+  if (soup.timer) { clearInterval(soup.timer); soup.timer = null; }
+  const total = spTotalSold();
+  const rate = total + soup.missed > 0 ? total / (total + soup.missed) : 1;
+  soup.stars = rate >= 0.9 ? 3 : rate >= 0.7 ? 2 : 1;
+  glog('🏆 Kedi Soup 영업 종료! 판매 ' + total + '그릇 (🥩' + soup.sold.meat + ' 🍅' + soup.sold.tomato + ' 🥔' + soup.sold.potato + ') · 놓침 ' + soup.missed + ' · 별 ' + soup.stars);
+  spBroadcast();
+}
+
 const ROOM_CODES = (process.env.ROOM_CODES || '0101,0514,3003,7300,5511').split(',').map(s => s.trim()).filter(Boolean);
 const rooms = {};
 function makeRoom(code) {
@@ -203,6 +544,7 @@ function makeRoom(code) {
     B: themedBoard('park'),
     paw: freshPaw(),
     run: freshRun(),
+    soup: freshSoup(),
     log: []
   };
 }
@@ -210,13 +552,13 @@ ROOM_CODES.forEach(c => { rooms[c] = makeRoom(c); });
 
 // CUR is the active room context. Handlers and timers set it before touching state.
 let CUR = rooms[ROOM_CODES[0]];
-let game = CUR.game, B = CUR.B, paw = CUR.paw, run = CUR.run;
+let game = CUR.game, B = CUR.B, paw = CUR.paw, run = CUR.run, soup = CUR.soup;
 function setRoom(r) {
   CUR = r;
-  game = r.game; B = r.B; paw = r.paw; run = r.run;
+  game = r.game; B = r.B; paw = r.paw; run = r.run; soup = r.soup;
 }
 // Re-point module aliases to CUR after any reassignment of game/paw/run inside logic.
-function sync() { CUR.game = game; CUR.B = B; CUR.paw = paw; CUR.run = run; }
+function sync() { CUR.game = game; CUR.B = B; CUR.paw = paw; CUR.run = run; CUR.soup = soup; }
 // bind: wrap a timer callback so it restores its room context and re-syncs after.
 function bind(r, fn) {
   return function () {
@@ -716,9 +1058,12 @@ io.on('connection', (socket) => {
     if (pp && !pp.isBot) { socket.data.pid = pid; pp.connected = true; }
     const rp = runByPid(pid);
     if (rp && !rp.isBot) { socket.data.pid = pid; rp.connected = true; }
+    const spp = soupByPid(pid);
+    if (spp && !spp.isBot) { socket.data.pid = pid; spp.connected = true; }
     socket.emit('state', { state: pub(), you: youOfKedi(socket) });
     socket.emit('pp_state', { state: ppPub(), you: youOfPaw(socket) });
     socket.emit('run_state', { state: runPub(), you: youOfRun(socket) });
+    socket.emit('sp_state', { state: spPub(), you: youOfSoup(socket) });
     broadcastRoomOnline(code);
     sync();
   });
@@ -732,13 +1077,15 @@ io.on('connection', (socket) => {
       for (const s of socketsInRoom(code)) {
         const nm = (r.game.players.find(p => p.id === s.data.pid) ||
                     r.paw.players.find(p => p.id === s.data.pid) ||
-                    r.run.players.find(p => p.id === s.data.pid));
+                    r.run.players.find(p => p.id === s.data.pid) ||
+                    r.soup.players.find(p => p.id === s.data.pid));
         humans.push(nm ? nm.name + ' (' + nm.cat + ')' : 'browsing');
       }
       let active = 'idle';
       if (r.game.phase !== 'lobby') active = 'Kedi Life';
       else if (r.paw.phase !== 'lobby') active = 'Paw Paw Paw';
       else if (r.run.phase !== 'lobby') active = 'Kedi Running';
+      else if (r.soup.phase !== 'lobby') active = 'Kedi Soup';
       return {
         code, online: socketsInRoom(code).length, active,
         people: humans,
@@ -756,6 +1103,7 @@ io.on('connection', (socket) => {
     socket.emit('state', { state: pub(), you: youOfKedi(socket) });
     socket.emit('pp_state', { state: ppPub(), you: youOfPaw(socket) });
     socket.emit('run_state', { state: runPub(), you: youOfRun(socket) });
+    socket.emit('sp_state', { state: spPub(), you: youOfSoup(socket) });
     broadcastRoomOnline(socket.data.room);
   }));
 
@@ -764,6 +1112,7 @@ io.on('connection', (socket) => {
     if (game.players.length >= 4) return socket.emit('errmsg', 'The lobby is full (4 Kedi max).');
     if (socket.data.pid && pawByPid(socket.data.pid)) return socket.emit('errmsg', 'Finish your Paw game first! 🐾');
     if (socket.data.pid && runByPid(socket.data.pid)) return socket.emit('errmsg', 'Finish your race first! 🏃');
+    if (socket.data.pid && soupByPid(socket.data.pid)) return socket.emit('errmsg', 'Finish your soup shift first! 🍲');
     const cat = d && d.cat;
     if (!CAT_KEYS.includes(cat)) return socket.emit('errmsg', 'Pick a Kedi first!');
     if (game.players.some(p => p.cat === cat)) return socket.emit('errmsg', 'That Kedi is taken in this game — pick another one!');
@@ -872,6 +1221,7 @@ io.on('connection', (socket) => {
     if (paw.players.length >= 2) return socket.emit('errmsg', 'Paw Paw Paw is 1 vs 1 — seats are full!');
     if (socket.data.pid && kediByPid(socket.data.pid)) return socket.emit('errmsg', 'Finish your Kedi Life game first! 🎲');
     if (socket.data.pid && runByPid(socket.data.pid)) return socket.emit('errmsg', 'Finish your race first! 🏃');
+    if (socket.data.pid && soupByPid(socket.data.pid)) return socket.emit('errmsg', 'Finish your soup shift first! 🍲');
     const cat = d && d.cat;
     if (!CAT_KEYS.includes(cat)) return socket.emit('errmsg', 'Pick a Kedi first!');
     if (paw.players.some(p => p.cat === cat)) return socket.emit('errmsg', 'That Kedi is taken in this game — pick another one!');
@@ -946,6 +1296,7 @@ io.on('connection', (socket) => {
     if (run.players.length >= 4) return socket.emit('errmsg', 'The race is full (4 Kedi max).');
     if (socket.data.pid && kediByPid(socket.data.pid)) return socket.emit('errmsg', 'Finish your Kedi Life game first! 🎲');
     if (socket.data.pid && pawByPid(socket.data.pid)) return socket.emit('errmsg', 'Finish your Paw game first! 🐾');
+    if (socket.data.pid && soupByPid(socket.data.pid)) return socket.emit('errmsg', 'Finish your soup shift first! 🍲');
     const cat = d && d.cat;
     if (!CAT_KEYS.includes(cat)) return socket.emit('errmsg', 'Pick a Kedi first!');
     if (run.players.some(p => p.cat === cat)) return socket.emit('errmsg', 'That Kedi is taken in this game — pick another one!');
@@ -1021,6 +1372,111 @@ io.on('connection', (socket) => {
     runBroadcast();
   }));
 
+  socket.on('sp_join', inRoom(socket, (d) => {
+    if (soup.phase !== 'lobby') return socket.emit('errmsg', 'The kitchen is open — watch this shift!');
+    if (soup.players.length >= 4) return socket.emit('errmsg', 'The kitchen is full (4 Kedi max).');
+    if (socket.data.pid && kediByPid(socket.data.pid)) return socket.emit('errmsg', 'Finish your Kedi Life game first! 🎲');
+    if (socket.data.pid && pawByPid(socket.data.pid)) return socket.emit('errmsg', 'Finish your Paw game first! 🐾');
+    if (socket.data.pid && runByPid(socket.data.pid)) return socket.emit('errmsg', 'Finish your race first! 🏃');
+    const cat = d && d.cat;
+    if (!CAT_KEYS.includes(cat)) return socket.emit('errmsg', 'Pick a Kedi first!');
+    if (soup.players.some(p => p.cat === cat)) return socket.emit('errmsg', 'That Kedi is taken in this game — pick another one!');
+    const role = d && d.role;
+    if (!SP_ROLES.includes(role)) return socket.emit('errmsg', 'Pick a role first!');
+    if (soup.players.some(p => p.role === role)) return socket.emit('errmsg', 'That role is taken — pick another!');
+    const humansAfter = soup.players.filter(p => !p.isBot).length + 1;
+    if (humansAfter <= 2 && role !== 'prep' && role !== 'chef') {
+      return socket.emit('errmsg', 'With 2 or fewer cooks, pick a kitchen role — the hall is handled by bots!');
+    }
+    const name = String((d && d.name) || '').trim().slice(0, 12) || 'Kedi';
+    const p = {
+      id: rid(), name, cat, role, isBot: false, connected: true,
+      x: 60 + Math.random() * 240, y: 200 + Math.random() * 60,
+      busyUntil: 0, carry: null, bt: null
+    };
+    soup.players.push(p);
+    socket.data.pid = p.id;
+    socket.emit('joined', { pid: p.id });
+    glog('👋 ' + name + ' (' + cat + ') joined Kedi Soup as ' + role);
+    spBroadcast();
+  }));
+
+  socket.on('sp_role', inRoom(socket, (d) => {
+    if (soup.phase !== 'lobby') return;
+    const p = soupByPid(socket.data.pid);
+    if (!p) return;
+    const role = d && d.role;
+    if (!SP_ROLES.includes(role) || soup.players.some(q => q !== p && q.role === role)) return;
+    const humans = soup.players.filter(q => !q.isBot).length;
+    if (humans <= 2 && role !== 'prep' && role !== 'chef') {
+      return socket.emit('errmsg', 'With 2 or fewer cooks, pick a kitchen role — the hall is handled by bots!');
+    }
+    p.role = role;
+    spBroadcast();
+  }));
+
+  socket.on('sp_leave', inRoom(socket, () => {
+    const p = soupByPid(socket.data.pid);
+    if (!p) return;
+    socket.data.pid = null;
+    if (soup.phase === 'lobby') {
+      soup.players = soup.players.filter(q => q !== p);
+      glog('👋 ' + p.name + ' left the Kedi Soup lobby');
+    } else {
+      p.isBot = true;
+      glog('🚪 ' + p.name + ' left Kedi Soup — a bot takes over the ' + p.role);
+      if (!process.env.SIMKEEP && soup.players.every(q => q.isBot)) {
+        if (soup.timer) { clearInterval(soup.timer); soup.timer = null; }
+        soup = freshSoup();
+        glog('🧹 Kedi Soup 초기화 (모두 나감)');
+      }
+    }
+    spBroadcast();
+  }));
+
+  socket.on('sp_start', inRoom(socket, () => {
+    if (soup.phase !== 'lobby' || soup.players.length < 1) return;
+    if (!soupByPid(socket.data.pid)) return;
+    SP_ROLES.forEach(r => { if (!soup.players.some(p => p.role === r)) spAddBot(r); });
+    soup.phase = 'playing';
+    soup.startAt = Date.now();
+    glog('🚩 Kedi Soup 영업 시작! ' + soup.players.map(q => SP_ROLE_INFO[q.role] + q.name + (q.isBot ? '(bot)' : '')).join(' · '));
+    spBroadcast();
+    soup.timer = setInterval(bind(CUR, spTick), SP_TICK);
+  }));
+
+  socket.on('sp_pos', inRoom(socket, (d) => {
+    if (soup.phase !== 'playing') return;
+    const p = soupByPid(socket.data.pid);
+    if (!p || p.isBot) return;
+    if (p.busyUntil > Date.now()) return;
+    const x = Number(d && d.x), y = Number(d && d.y);
+    if (!isFinite(x) || !isFinite(y)) return;
+    p.x = Math.max(14, Math.min(346, x));
+    p.y = Math.max(14, Math.min(416, y));
+  }));
+
+  socket.on('sp_act', inRoom(socket, () => {
+    if (soup.phase !== 'playing') return;
+    const p = soupByPid(socket.data.pid);
+    if (!p || p.isBot) return;
+    spDoAction(p);
+  }));
+
+  socket.on('sp_again', inRoom(socket, () => {
+    if (soup.phase !== 'over') return;
+    if (soup.timer) { clearInterval(soup.timer); soup.timer = null; }
+    const humans = soup.players.filter(p => !p.isBot && p.connected);
+    soup = freshSoup();
+    for (const p of humans) {
+      p.x = 60 + Math.random() * 240; p.y = 200 + Math.random() * 60;
+      p.busyUntil = 0; p.carry = null;
+      soup.players.push(p);
+    }
+    glog('🔄 Kedi Soup 다시 하기');
+    spBroadcast();
+  }));
+
   socket.on('disconnect', () => {
     const code = socket.data.room;
     const r = rooms[code];
@@ -1062,6 +1518,18 @@ io.on('connection', (socket) => {
         glog('🧹 Kedi Running 초기화 (모두 나감)');
       }
       runBroadcast();
+    }
+    const sp2 = soupByPid(pid);
+    if (sp2) {
+      sp2.connected = false;
+      if (soup.phase === 'lobby') {
+        soup.players = soup.players.filter(q => q !== sp2);
+      } else if (soup.players.every(q => q.isBot || !q.connected)) {
+        if (soup.timer) { clearInterval(soup.timer); soup.timer = null; }
+        soup = freshSoup(); sync();
+        glog('🧹 Kedi Soup 초기화 (모두 나감)');
+      }
+      spBroadcast();
     }
     broadcastRoomOnline(code);
     sync();
