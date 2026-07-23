@@ -8,7 +8,7 @@
 - **Kedi Running** 🏃 — 2~4인 달리기. 좌/우를 번갈아 빠르게 연타(PC는 방향키)! 📣 응원, 🍪 간식 유혹, 💧 물 뿌리기, 그리고 갑자기 내리는 비 🌧️까지.
 - **Kedi Soup** 🍲 — 1~4인 협동 스프 가게. 재료를 썰고, 냄비를 젓고, 서빙하고, 계산까지! 10시부터 16시까지 영업하고 점심 러시를 버텨내세요. 빈 역할은 봇이 맡아요.
 
-**방(Room)**: 접속하면 4자리 방 번호를 입력해 입장해요. 방마다 게임·접속자·기록이 완전히 분리돼요. 기본 방 번호는 `0101 / 0514 / 3003 / 7300 / 5511` (환경변수 `ROOM_CODES`로 변경 가능).
+**방(Room)**: 접속하면 4자리 방 번호를 입력해 입장해요. 방마다 게임·접속자·기록이 완전히 분리돼요.
 
 ---
 
@@ -22,7 +22,7 @@ Cozy cat mini-games to play with friends. Open the link, pick your Kedi, choose 
 - **Kedi Running** 🏃 — A sprint race for 2–4. Tap left·right fast (arrow keys on PC), cheer yourself, tempt rivals with snacks, splash water — and take cover when it rains!
 - **Kedi Soup** 🍲 — A co-op soup shop for 1–4 cooks. Chop, stir, serve and ring up customers from 10:00 to 16:00 — survive the lunch rush! Bots cover any empty role.
 
-**Rooms**: on open, enter a 4-digit room code. Each room is fully isolated (games, players, logs). Default codes: `0101 / 0514 / 3003 / 7300 / 5511` (override with the `ROOM_CODES` env var).
+**Rooms**: on open, enter a 4-digit room code. Each room is fully isolated (games, players, logs).
 
 ---
 
