@@ -2068,6 +2068,16 @@ function renderSpGame(){
   spStartLoop();
 }
 
+function spNearestC(arr, pred){
+  var best = null, bd = SPC.RANGE;
+  arr.forEach(function(item, i){
+    if (pred && !pred(item, i)) return;
+    var d = spD(spPos, item);
+    if (d < bd){ bd = d; best = { item: item, i: i }; }
+  });
+  return best;
+}
+
 function spMyAction(){
   if (SPYOU < 0 || !SPS || SPS.phase !== 'playing') return null;
   var me = SPS.players[SPYOU];
@@ -2077,8 +2087,8 @@ function spMyAction(){
   var near = function(pt){ return spD(spPos, pt) < SPC.RANGE; };
   if (me.role === 'prep'){
     if (!carry){
-      var bin = SPC.BINS.find(near);
-      if (bin) return 'Pick ' + SP_ICON[bin.type];
+      var nb = spNearestC(SPC.BINS);
+      if (nb) return 'Pick ' + SP_ICON[nb.item.type];
     } else if (carry.kind === 'raw' && near(SPC.BOARD)) return 'Chop 🔪';
     else if (carry.kind === 'chopped'){
       var pi = SPC.POTS.findIndex(function(pt, i){
@@ -2088,10 +2098,10 @@ function spMyAction(){
     }
   } else if (me.role === 'chef'){
     if (!carry){
-      var ri = SPC.POTS.findIndex(function(pt, i){ return near(pt) && SPS.pots[i].servings > 0; });
-      if (ri >= 0 && SPS.counter.length < 4) return 'Pour 🍜';
-      var ci = SPC.POTS.findIndex(function(pt, i){ return near(pt) && SPS.pots[i].cook > 0 && SPS.pots[i].cook < 100; });
-      if (ci >= 0) return 'Stir 🥄';
+      var rp = spNearestC(SPC.POTS, function(pt, i){ return SPS.pots[i].servings > 0; });
+      if (rp && SPS.counter.length < 4) return 'Pour 🍜 (' + SP_ICON[rp.item.type] + ')';
+      var cp = spNearestC(SPC.POTS, function(pt, i){ return SPS.pots[i].cook > 0 && SPS.pots[i].cook < 100; });
+      if (cp) return 'Stir 🥄 (' + SP_ICON[cp.item.type] + ')';
     } else if (carry.kind === 'bowl' && near(SPC.COUNTER) && SPS.counter.length < 4) return 'Place ⬆️';
   } else if (me.role === 'server'){
     if (!carry){

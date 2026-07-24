@@ -291,13 +291,23 @@ function spDemand() {
   return need;
 }
 
+function spNearest(p, arr, pred) {
+  let best = null, bd = SP_RANGE;
+  arr.forEach((item, i) => {
+    if (pred && !pred(item, i)) return;
+    const d = spDist(p, item);
+    if (d < bd) { bd = d; best = { item, i }; }
+  });
+  return best;
+}
+
 function spActionFor(p) {
   const now = Date.now();
   if (p.busyUntil > now) return null;
   if (p.role === 'prep') {
     if (!p.carry) {
-      const bin = SP_BINS.find(b => spDist(p, b) < SP_RANGE);
-      if (bin) return { t: 'pick', ing: bin.type };
+      const nb = spNearest(p, SP_BINS);
+      if (nb) return { t: 'pick', ing: nb.item.type };
     } else if (p.carry.kind === 'raw' && spDist(p, SP_BOARD) < SP_RANGE) {
       return { t: 'chop' };
     } else if (p.carry.kind === 'chopped') {
@@ -306,17 +316,17 @@ function spActionFor(p) {
     }
   } else if (p.role === 'chef') {
     if (!p.carry) {
-      const ri = SP_POTS.findIndex((pt, i) => spDist(p, pt) < SP_RANGE && soup.pots[i].servings > 0);
-      if (ri >= 0 && soup.counter.length < 4) return { t: 'pour', pot: ri };
-      const ci = SP_POTS.findIndex((pt, i) => spDist(p, pt) < SP_RANGE && soup.pots[i].cook > 0 && soup.pots[i].cook < 100);
-      if (ci >= 0) return { t: 'stir', pot: ci };
+      const rp = spNearest(p, SP_POTS, (pt, i) => soup.pots[i].servings > 0);
+      if (rp && soup.counter.length < 4) return { t: 'pour', pot: rp.i };
+      const cp = spNearest(p, SP_POTS, (pt, i) => soup.pots[i].cook > 0 && soup.pots[i].cook < 100);
+      if (cp) return { t: 'stir', pot: cp.i };
     } else if (p.carry.kind === 'bowl' && spDist(p, SP_COUNTER) < SP_RANGE && soup.counter.length < 4) {
       return { t: 'place' };
     }
   } else if (p.role === 'server') {
     if (!p.carry) {
-      const c = soup.customers.find(c => c.state === 'seated' && spDist(p, c) < SP_RANGE);
-      if (c) return { t: 'order', cust: c.id };
+      const nc = spNearest(p, soup.customers, c => c.state === 'seated');
+      if (nc) return { t: 'order', cust: nc.item.id };
       if (spDist(p, SP_COUNTER) < SP_RANGE && soup.counter.length) {
         const waiting = soup.customers.filter(c => c.state === 'ordered' && !soup.players.some(q => q.carry && q.carry.kind === 'bowl' && q.carry.target === c.id));
         const match = waiting.find(c => soup.counter.includes(c.soup));
@@ -329,8 +339,8 @@ function spActionFor(p) {
   } else if (p.role === 'cleaner') {
     const c = soup.customers.find(c => c.state === 'topay' && c.atReg && spDist(p, SP_REG) < SP_RANGE);
     if (c) return { t: 'pay', cust: c.id };
-    const ti = soup.tables.findIndex((tb, i) => tb.dirty && spDist(p, SP_TABLES[i]) < SP_RANGE);
-    if (ti >= 0) return { t: 'clean', table: ti };
+    const nt = spNearest(p, SP_TABLES, (t, i) => soup.tables[i].dirty);
+    if (nt) return { t: 'clean', table: nt.i };
   }
   return null;
 }
