@@ -212,6 +212,7 @@ const SP_COUNTER = { x: 180, y: 180 };
 const SP_POTS = [{ x: 92, y: 268, type: 'meat' }, { x: 180, y: 268, type: 'tomato' }, { x: 268, y: 268, type: 'potato' }];
 const SP_BOARD = { x: 64, y: 366 };
 const SP_BINS = [{ x: 168, y: 366, type: 'meat' }, { x: 236, y: 366, type: 'potato' }, { x: 304, y: 366, type: 'tomato' }];
+const SP_TRASH = { x: 334, y: 408 };
 const SP_RANGE = 52;
 const SP_BOTSPD = 150;
 
@@ -342,6 +343,7 @@ function spActionFor(p) {
     const nt = spNearest(p, SP_TABLES, (t, i) => soup.tables[i].dirty);
     if (nt) return { t: 'clean', table: nt.i };
   }
+  if (p.carry && spDist(p, SP_TRASH) < SP_RANGE) return { t: 'trash' };
   return null;
 }
 
@@ -400,6 +402,9 @@ function spDoAction(p) {
     else if (act.t === 'clean') {
       const tb = soup.tables[act.table];
       if (tb && tb.dirty) { tb.dirty = false; spFx('clean'); }
+    }
+    else if (act.t === 'trash') {
+      if (p.carry) { p.carry = null; spFx('trash'); }
     }
   }), SP_ACT * SC);
   return true;
